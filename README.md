@@ -1,19 +1,7 @@
-# 🎈 Blank app template
+# Job Change Calculator
+Overview
+You want / need to change your current job? Do you ever wondered, what that means for your salary?
 
-A simple Streamlit app template for you to modify!
+With this app, you can easily calculate the financial impact of a job change on your future salary and visualize the results.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
-
-### How to run it on your own machine
-
-1. Install the requirements
-
-   ```
-   $ pip install -r requirements.txt
-   ```
-
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+https://job-change-calculator.streamlit.app/
