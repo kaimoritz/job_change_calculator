@@ -12,11 +12,11 @@ import streamlit as st
 
 st.set_page_config(layout="wide")
 
-st.header("Change Calculator")
+st.header("Job Change Calculator")
 #log.info("Hello Logfile @ info level")
 
 
-years = st.sidebar.number_input("Jahre bis zur Rente", min_value=0, max_value=100, value=5, step=1)
+years = st.sidebar.number_input("Years until my retirement", min_value=0, max_value=100, value=5, step=1)
 current_job_salary = st.sidebar.number_input("Salary current job (year)", min_value=0, value=100)
 new_job_salary = st.sidebar.number_input("Salary new job (year)", min_value=0, value=90)
 salary_increase_input = st.sidebar.number_input("Expected yearly salary increase (%)", min_value=0.0, value=2.0, step=0.1)
