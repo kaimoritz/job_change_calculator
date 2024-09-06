@@ -7,7 +7,12 @@ st.set_page_config(
     page_title="Job Change Calculator",
     page_icon=":moneybag:",
     layout="wide",
-    initial_sidebar_state="auto",
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': 'https://github.com/kaimoritz/job_change_calculator',
+        'Report a bug': "https://github.com/kaimoritz/job_change_calculator",
+        'About': "Version 1.0 | Created by Kai Moritz."
+    }
 )
 
 st.logo("images/logo.png")
@@ -80,7 +85,7 @@ def overall_sum_4_job(df, job_name, column_names) -> float:
     return sum
 
 
-col_1_1, col_1_2, col_1_3, col_1_4 = st.columns(4)
+col_1_1, col_1_2, col_1_3, col_1_4, col_1_5 = st.columns(5)
 help_salary_new_job_initial = "Your start salary of the new job. With a comparision to your current's job salary."
 col_1_1.metric(f"Salary new job inital",
                value=f"{new_job_salary} k€",
@@ -95,32 +100,31 @@ col_1_2.metric(f"Salary new job in {years} years",
 #current_job_final_salary = calculate_final_salary(current_job_salary, salary_increase_rate, years)
 
 
-col_2_1, col_2_2, col_2_3, col_2_4 = st.columns([1,1,1,1])
 current_job_overall_salary = overall_sum_4_job(df, "Current job", column_names)
 help_overall_sum_current = "The sum of your current job's salary until your retirement."
-col_2_1.metric("Overall sum current job",
+col_1_3.metric("Overall sum current job",
                value=f"{current_job_overall_salary:.2f} k€",
                help=help_overall_sum_current)
 help_overall_sum_new = "The sum of your new job's salary until your retirement."
 new_job_overall_salary = overall_sum_4_job(df, "New job", column_names)
-col_2_2.metric("Overall sum new job",
+col_1_4.metric("Overall sum new job",
                value=f"{new_job_overall_salary:.2f} k€",
                help=help_overall_sum_new
                )
 overall_difference = new_job_overall_salary - current_job_overall_salary
 help_overall_delta = "The difference in your salary. New job vs. current job."
-col_2_3.metric("Overall delta",
+col_1_5.metric("Overall delta",
                value=f"{overall_difference:.2f} k€",
                help=help_overall_delta)
 
-
-col_3_1, col_3_2, col_3_3, col_3_4 = st.columns([3,1,1,1])
+col_3_1, col_3_2, col_3_3, col_3_4 = st.columns([2,1,1,1])
 col_3_1.header("Future development")
 
 with col_3_2:
     data_type = st.radio(
         "View",
-        ["Yearly", "Overall sum"]
+        ["Yearly", "Overall sum"],
+        label_visibility="collapsed"
     )
 
 #with col_3_3:
@@ -134,8 +138,7 @@ with col_3_3:
     chart_type = st.radio(
         "Chart type",
         ["Bar", "Line"],
-        key="visibility",
-
+        label_visibility="collapsed",
     )
 
 if data_type == "Yearly":
@@ -157,7 +160,21 @@ elif data_type == "Overall sum":
         st.bar_chart(df_cumsum_t, stack=False)
 
 st.header("Detailed data")
-st.dataframe(df)
+
+# column configs:
+# create a number float %.1f only for dtype float (-> dynamic names "relevant month)
+column_config_float = {}
+for col in column_names:
+    column_config_float[col] = st.column_config.NumberColumn(
+        f"+ {int(col)} years",
+        help=f"Your future income in {int(col)} years.",
+        min_value=0,
+        #step=1,
+        format="%.2f k€",
+        )
+
+st.dataframe(df,  column_config=column_config_float
+)
 
 
 #        cumsum_diff = df_cumsum.loc["New job"] - df_cumsum.loc['Current job']
