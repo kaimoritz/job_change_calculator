@@ -112,7 +112,7 @@ col_1_4.metric("Overall sum new job",
                help=help_overall_sum_new
                )
 overall_difference = new_job_overall_salary - current_job_overall_salary
-help_overall_delta = "The difference in your salary. New job vs. current job."
+help_overall_delta = f"The is the cumulative salary for the next {years} years. New job vs. current job."
 col_1_5.metric("Overall delta",
                value=f"{overall_difference:.2f} k€",
                help=help_overall_delta)
