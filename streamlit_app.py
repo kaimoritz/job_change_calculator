@@ -37,11 +37,16 @@ info_text = f"""
 Do you want or need to change your current job? Have you ever wondered what that means for your salary? 
 With this app, you can easily calculate the financial impact of a job change on your future salary and visualize the results.
 
-\tCompare your current salary with the new job’s salary:\n
-\t   # Current job: {current_job_salary:.02f} k€ will be {current_job_salary_final:.02f} k€ in {years} years with {salary_increase_input} % salary increase rate.\n
-\t   # New job: {new_job_salary:.02f} k€ will be {new_job_salary_final:.02f} k€ in {years} years with {salary_increase_input} % salary increase rate.\n
-\t   # Difference: First year: {new_job_salary - current_job_salary:.02f} k€ -> Last year: {new_job_salary_final - current_job_salary_final:.02f} k€
+Note: I have deliberately not taken gross/net salary into account here, as this is highly individual. You may enter your 
+gross or net salary, see online gross/net calculators to get your numbers.
 """
+
+#\tCompare your current salary with the new job’s salary:\n
+#\t   # Current job: {current_job_salary:.02f} k€ will be {current_job_salary_final:.02f} k€ in {years} years with {salary_increase_input} % salary increase rate.\n
+#\t   # New job: {new_job_salary:.02f} k€ will be {new_job_salary_final:.02f} k€ in {years} years with {salary_increase_input} % salary increase rate.\n
+#\t   # Difference: First year: {new_job_salary - current_job_salary:.02f} k€ -> Last year: {new_job_salary_final - current_job_salary_final:.02f} k€
+
+
 st.info(info_text, icon="ℹ️")
 
 
@@ -159,7 +164,7 @@ elif data_type == "Overall sum":
         df_cumsum_t = df_cumsum.T
         st.bar_chart(df_cumsum_t, stack=False)
 
-st.header("Detailed data")
+st.header("Detailed calculation")
 
 # column configs:
 # create a number float %.1f only for dtype float (-> dynamic names "relevant month)
