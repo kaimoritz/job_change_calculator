@@ -17,7 +17,8 @@ st.set_page_config(
 
 st.logo("images/logo.png")
 
-
+st.sidebar.text("") # vertical space
+#st.sidebar.text("") # vertical space
 years = st.sidebar.number_input("Years until my retirement", min_value=0, max_value=100, value=5, step=1)
 current_job_salary = st.sidebar.number_input("Current Job Salary (k€/year)", min_value=0, value=100)
 new_job_salary = st.sidebar.number_input("New job Salary (k€/year)", min_value=0, value=90)
@@ -37,7 +38,8 @@ new_job_salary_final = calculate_final_salary(new_job_salary, salary_increase_ra
 st.title("Do you want or need to change your current job?")
 
 st.text("""
-Have you ever wondered what that means for your salary? With this app, you can easily calculate the financial impact of a job change on your future salary and visualize the results.
+Have you ever wondered what that means for your salary? With this app, you can easily calculate the financial 
+impact of a job change on your future salary and visualize the results.
 """)
 #st.text("") # vertical space
 
