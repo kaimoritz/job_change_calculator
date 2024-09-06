@@ -37,8 +37,7 @@ new_job_salary_final = calculate_final_salary(new_job_salary, salary_increase_ra
 st.title("Do you want or need to change your current job?")
 
 st.text("""
-Have you ever wondered what that means for your salary? With this app, you can easily calculate the financial impact of 
-a job change on your future salary and visualize the results.
+Have you ever wondered what that means for your salary? With this app, you can easily calculate the financial impact of a job change on your future salary and visualize the results.
 """)
 #st.text("") # vertical space
 
