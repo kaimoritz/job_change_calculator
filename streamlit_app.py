@@ -1,19 +1,16 @@
-import logging
-
 import numpy as np
 import pandas as pd
 import streamlit as st
 
-#from src.app import init_app, init_logger
 
-#init_app()
-#init_logger()
-#log = logging.getLogger(__name__)
+st.set_page_config(
+    page_title="Job Change Calculator",
+    page_icon=":moneybag:",
+    layout="wide",
+    initial_sidebar_state="auto",
+)
 
-st.set_page_config(layout="wide")
-
-st.header("Job Change Calculator")
-#log.info("Hello Logfile @ info level")
+st.logo("images/logo.png")
 
 
 years = st.sidebar.number_input("Years until my retirement", min_value=0, max_value=100, value=5, step=1)
@@ -32,12 +29,15 @@ def calculate_final_salary(start_salary, increase, years):
 current_job_salary_final = calculate_final_salary(current_job_salary, salary_increase_rate, years)
 new_job_salary_final = calculate_final_salary(new_job_salary, salary_increase_rate, years)
 info_text = f"""
-Compare your current job's salary with a potential new job\n
-\tCurrent job: {current_job_salary:.02f}€ will be {current_job_salary_final:.02f}€ in {years} years with {salary_increase_input} % salary increase rate.\n
-\tNew job: {new_job_salary:.02f}€ will be {new_job_salary_final:.02f}€ in {years} years with {salary_increase_input} % salary increase rate.\n
-\tDifference: First year: {new_job_salary - current_job_salary:.02f}€ -> Last year: {new_job_salary_final - current_job_salary_final:.02f}€
+Do you want or need to change your current job? Have you ever wondered what that means for your salary? 
+With this app, you can easily calculate the financial impact of a job change on your future salary and visualize the results.
+
+\tCompare your current salary with the new job’s salary:\n
+\t   # Current job: {current_job_salary:.02f} k€ will be {current_job_salary_final:.02f} k€ in {years} years with {salary_increase_input} % salary increase rate.\n
+\t   # New job: {new_job_salary:.02f} k€ will be {new_job_salary_final:.02f} k€ in {years} years with {salary_increase_input} % salary increase rate.\n
+\t   # Difference: First year: {new_job_salary - current_job_salary:.02f} k€ -> Last year: {new_job_salary_final - current_job_salary_final:.02f} k€
 """
-st.info(info_text)
+st.info(info_text, icon="ℹ️")
 
 
 def calculate_next_years_1(current_salary, salary_increase_rate, years):
@@ -81,29 +81,45 @@ def overall_sum_4_job(df, job_name, column_names) -> float:
 
 
 col_1_1, col_1_2, col_1_3, col_1_4 = st.columns(4)
-col_1_1.metric(f"Salary new job inital", value=f"{new_job_salary} €", delta=new_job_salary-current_job_salary)
-col_1_2.metric(f"Salary new job in {years} years", value=f"{new_job_salary_final:.2f}€", delta=f"{(new_job_salary_final-current_job_salary_final):.2f}€")
-
+help_salary_new_job_initial = "Your start salary of the new job. With a comparision to your current's job salary."
+col_1_1.metric(f"Salary new job inital",
+               value=f"{new_job_salary} k€",
+               delta=f"{new_job_salary-current_job_salary:.2f} k€",
+               help=help_salary_new_job_initial)
+help_salary_new_job_final = "Your salary of the new job when you retire. Compared to the current job's salary when you retire."
+col_1_2.metric(f"Salary new job in {years} years",
+               value=f"{new_job_salary_final:.2f} k€",
+               delta=f"{(new_job_salary_final-current_job_salary_final):.2f} k€",
+               help=help_salary_new_job_final
+               )
 #current_job_final_salary = calculate_final_salary(current_job_salary, salary_increase_rate, years)
-col_2_1, col_2_2, col_2_3, col_2_4 = st.columns(4)
+
+
+col_2_1, col_2_2, col_2_3, col_2_4 = st.columns([1,1,1,1])
 current_job_overall_salary = overall_sum_4_job(df, "Current job", column_names)
-col_2_1.metric("Overall sum current job", value=f"{current_job_overall_salary:.2f}€")
-
+help_overall_sum_current = "The sum of your current job's salary until your retirement."
+col_2_1.metric("Overall sum current job",
+               value=f"{current_job_overall_salary:.2f} k€",
+               help=help_overall_sum_current)
+help_overall_sum_new = "The sum of your new job's salary until your retirement."
 new_job_overall_salary = overall_sum_4_job(df, "New job", column_names)
-col_2_2.metric("Overall sum new job", value=f"{new_job_overall_salary:.2f}€")
-
+col_2_2.metric("Overall sum new job",
+               value=f"{new_job_overall_salary:.2f} k€",
+               help=help_overall_sum_new
+               )
 overall_difference = new_job_overall_salary - current_job_overall_salary
-col_2_3.metric("Overall delta", value=f"{overall_difference:.2f}€")
+help_overall_delta = "The difference in your salary. New job vs. current job."
+col_2_3.metric("Overall delta",
+               value=f"{overall_difference:.2f} k€",
+               help=help_overall_delta)
 
-st.header("Data")
-st.dataframe(df)
 
 col_3_1, col_3_2, col_3_3, col_3_4 = st.columns([3,1,1,1])
-col_3_1.header("Timeline")
+col_3_1.header("Future development")
 
 with col_3_2:
     data_type = st.radio(
-        "Data view",
+        "View",
         ["Yearly", "Overall sum"]
     )
 
@@ -114,7 +130,7 @@ with col_3_2:
 #    )
 value_type = "Absolute"
 
-with col_3_4:
+with col_3_3:
     chart_type = st.radio(
         "Chart type",
         ["Bar", "Line"],
@@ -139,6 +155,10 @@ elif data_type == "Overall sum":
     else:
         df_cumsum_t = df_cumsum.T
         st.bar_chart(df_cumsum_t, stack=False)
+
+st.header("Detailed data")
+st.dataframe(df)
+
 
 #        cumsum_diff = df_cumsum.loc["New job"] - df_cumsum.loc['Current job']
 #        df_cumsum_diff  = pd.DataFrame(cumsum_diff)
