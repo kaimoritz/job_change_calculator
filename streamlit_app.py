@@ -33,21 +33,30 @@ def calculate_final_salary(start_salary, increase, years):
 
 current_job_salary_final = calculate_final_salary(current_job_salary, salary_increase_rate, years)
 new_job_salary_final = calculate_final_salary(new_job_salary, salary_increase_rate, years)
-info_text = f"""
-Do you want or need to change your current job? Have you ever wondered what that means for your salary? 
-With this app, you can easily calculate the financial impact of a job change on your future salary and visualize the results.
 
-Note: I have deliberately not taken gross/net salary into account here, as this is highly individual. You may enter your 
-gross or net salary, see online gross/net calculators to get your numbers.
-"""
+st.title("Do you want or need to change your current job?")
 
+st.text("""
+Have you ever wondered what that means for your salary? With this app, you can easily calculate the financial impact of 
+a job change on your future salary and visualize the results.
+""")
+#st.text("") # vertical space
+
+
+#info_text = f"""
+#Do you want or need to change your current job? Have you ever wondered what that means for your salary?
+#With this app, you can easily calculate the financial impact of a job change on your future salary and visualize the results.
+#
+#Note: I have deliberately not taken gross/net salary into account here, as this is highly individual. You may enter your
+#gross or net salary, see online gross/net calculators to get your numbers.
+#"""
 #\tCompare your current salary with the new job’s salary:\n
 #\t   # Current job: {current_job_salary:.02f} k€ will be {current_job_salary_final:.02f} k€ in {years} years with {salary_increase_input} % salary increase rate.\n
 #\t   # New job: {new_job_salary:.02f} k€ will be {new_job_salary_final:.02f} k€ in {years} years with {salary_increase_input} % salary increase rate.\n
 #\t   # Difference: First year: {new_job_salary - current_job_salary:.02f} k€ -> Last year: {new_job_salary_final - current_job_salary_final:.02f} k€
 
 
-st.info(info_text, icon="ℹ️")
+#st.info(info_text, icon="ℹ️")
 
 
 def calculate_next_years_1(current_salary, salary_increase_rate, years):
@@ -89,7 +98,7 @@ def overall_sum_4_job(df, job_name, column_names) -> float:
     sum = np.sum(df.loc[job_name, column_names].values)
     return sum
 
-
+st.header("Key metrics")
 col_1_1, col_1_2, col_1_3, col_1_4, col_1_5 = st.columns(5)
 help_salary_new_job_initial = "Your start salary of the new job. With a comparision to your current's job salary."
 col_1_1.metric(f"Salary new job inital",
@@ -103,7 +112,6 @@ col_1_2.metric(f"Salary new job in {years} years",
                help=help_salary_new_job_final
                )
 #current_job_final_salary = calculate_final_salary(current_job_salary, salary_increase_rate, years)
-
 
 current_job_overall_salary = overall_sum_4_job(df, "Current job", column_names)
 help_overall_sum_current = "The sum of your current job's salary until your retirement."
@@ -217,3 +225,11 @@ st.dataframe(df,  column_config=column_config_float
 #                    df_cumsum_diff_t = df_cumsum_diff.T
 #                    st.bar_chart(df_cumsum_diff_t, stack=False)
 #
+
+
+
+st.text("""
+Note: I have deliberately not taken gross/net salary into account here, as this is highly individual. You may enter your 
+gross or net salary, see online gross/net calculators to get your numbers.
+"""
+)
