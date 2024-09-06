@@ -4,5 +4,5 @@ Do you want or need to change your current job? Have you ever wondered what that
 With this app, you can easily calculate the financial impact of a job change on your future salary and visualize the 
 results.
 
-### Link
+### Running in the streamlit community cloud:
 https://job-change-calculator.streamlit.app/
