@@ -17,8 +17,8 @@ st.header("Job Change Calculator")
 
 
 years = st.sidebar.number_input("Years until my retirement", min_value=0, max_value=100, value=5, step=1)
-current_job_salary = st.sidebar.number_input("Salary current job (year)", min_value=0, value=100)
-new_job_salary = st.sidebar.number_input("Salary new job (year)", min_value=0, value=90)
+current_job_salary = st.sidebar.number_input("Current Job Salary (k€/year)", min_value=0, value=100)
+new_job_salary = st.sidebar.number_input("New job Salary (k€/year)", min_value=0, value=90)
 salary_increase_input = st.sidebar.number_input("Expected yearly salary increase (%)", min_value=0.0, value=2.0, step=0.1)
 salary_increase_rate = salary_increase_input / 100
 #severance = st.sidebar.number_input("severance pay", min_value=0, value=200)
