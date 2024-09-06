@@ -18,12 +18,17 @@ st.logo("images/logo.png")
 
 st.sidebar.text("")  # vertical space
 
+# sidebar: parameter input
 years = st.sidebar.number_input("Years until my retirement", min_value=0, max_value=100, value=5, step=1)
 current_job_salary = st.sidebar.number_input("Current Job Salary (k€/year)", min_value=0, value=100)
 new_job_salary = st.sidebar.number_input("New job Salary (k€/year)", min_value=0, value=90)
-salary_increase_input = st.sidebar.number_input("Expected yearly salary increase (%)", min_value=0.0, value=2.0,
+salary_increase_input = st.sidebar.number_input("Expected yearly salary increase (%)",
+                                                min_value=0.0,
+                                                value=2.0,
                                                 step=0.1)
 salary_increase_rate = salary_increase_input / 100
+severance_pay = st.sidebar.number_input("Severance pay (k€)", min_value=0, value=100, step=1)
+severance_annual_rate = st.sidebar.number_input("Annual payment from severance pay (yearly/k€)", min_value=0, value=12)
 
 
 def calculate_final_salary(start_salary, increase, years):
@@ -42,22 +47,9 @@ impact of a job change on your future salary and visualize the results.
 """)
 
 
-def calculate_next_years_1(current_salary, salary_increase_rate, years):
-    # init first cell with current salary
-    data = {column_names[0]: [current_salary]}
-    # calc the salary for the next years
-    for i in range(1, years):
-        previous_year_salary = data[column_names[i - 1]][0]
-        new_salary = previous_year_salary * (1 + salary_increase_rate)
-        data[column_names[i]] = [new_salary]
-
-    return data
-
-
-def add_calculations(df, name, initial_salary, salary_increase_rate) -> pd.DataFrame:
+def add_calculations_salary_in_the_next_years(df, name, initial_salary, salary_increase_rate) -> pd.DataFrame:
     data = {column_names[0]: [initial_salary]}
-
-    # calculate the salary for the next years
+    # calculate the salaries for the next years
     tmp_salary = initial_salary
     for i in range(1, df.shape[1]):
         previous_year_salary = data[column_names[i - 1]][0]
@@ -70,10 +62,35 @@ def add_calculations(df, name, initial_salary, salary_increase_rate) -> pd.DataF
     return df
 
 
+def add_severance_payments(df, severance_pay, annual_payment) -> pd.DataFrame:
+    # Calculation of payments
+    payments = []
+    remaining_balance = severance_pay
+
+    for year in column_names:
+        if year == column_names[-1]:
+            payments.append(remaining_balance)
+        else:
+            if remaining_balance >= annual_payment:
+                payments.append(annual_payment)
+                remaining_balance -= annual_payment
+            else:
+                payments.append(remaining_balance)
+                remaining_balance = 0
+
+    # Add new row to DataFrame
+    df.loc["Severance payment"] = payments
+    return df
+
+
 column_names = [float(i) for i in range(years + 1)]
 df = pd.DataFrame(columns=column_names)
-df = add_calculations(df, "Current job", current_job_salary, salary_increase_rate)
-df = add_calculations(df, "New job", new_job_salary, salary_increase_rate)
+df = add_calculations_salary_in_the_next_years(df, "Current job", current_job_salary, salary_increase_rate)
+df = add_calculations_salary_in_the_next_years(df, "New job", new_job_salary, salary_increase_rate)
+df = add_severance_payments(df, severance_pay, severance_annual_rate)
+
+df_severance = pd.DataFrame(columns=column_names)
+df_severance = add_severance_payments(df_severance, severance_pay, severance_annual_rate)
 
 df.columns = df.columns.astype(float)
 df = df.sort_index(axis=1)
@@ -98,7 +115,6 @@ col_1_2.metric(f"Salary new job in {years} years",
                delta=f"{(new_job_salary_final - current_job_salary_final):.2f} k€",
                help=help_salary_new_job_final
                )
-
 
 current_job_overall_salary = overall_sum_4_job(df, "Current job", column_names)
 help_overall_sum_current = "The sum of your current job's salary until your retirement."
@@ -168,7 +184,6 @@ for col in column_names:
 
 st.dataframe(df, column_config=column_config_float
              )
-
 
 st.text("""
 Note: I have deliberately not taken gross/net salary into account here, as this is highly individual. You may enter your 
