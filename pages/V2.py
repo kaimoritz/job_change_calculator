@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import streamlit as st
+import plotly.graph_objs as go
 
 st.set_page_config(
     page_title="Job Change Calculator",
@@ -30,7 +31,7 @@ salary_increase_rate = salary_increase_input / 100
 
 severance_pay = 0
 severance_annual_rate = 0
-severance_paid = st.sidebar.checkbox("I received a severance pay")
+severance_paid = st.sidebar.checkbox("I received a severance pay", value=True)
 if severance_paid:
     severance_pay = st.sidebar.number_input("Severance pay (k€)", min_value=0, value=50, step=1)
     severance_annual_rate = st.sidebar.number_input("Annual payment from severance pay (yearly/k€)", min_value=0, value=10)
@@ -92,6 +93,38 @@ def add_severance_payments(df, severance_pay, annual_payment) -> pd.DataFrame:
 
     return df
 
+
+def plot_advanced_bar_chart():
+    fig = go.Figure()
+
+    fig.update_layout(
+        template="simple_white",
+        xaxis=dict(title_text="Year"),
+        yaxis=dict(title_text="Count"),
+        barmode="stack",
+    )
+
+    groups = column_names  # ['var1', 'var2', 'var3', ]
+    colors = ["#83C9FF", "#0068C9", "#FFABAB"]
+    names = ['Current job', 'New job', 'Severance payment']
+
+    i = 0
+    for r, n, c in zip(groups, names, colors):
+        print("i:", i, "r:", r, "n:", n, "c:", c)
+        ## put var1 and var2 together on the first subgrouped bar
+        if i < 1:
+            fig.add_trace(
+                go.Bar(x=[df_t.index.values, ['Current job'] * len(df_t.index.values)], y=df_t[n], name=n,
+                       marker_color=c),
+            )
+        ## put var3 and var4 together on the first subgrouped bar
+        else:
+            fig.add_trace(
+                go.Bar(x=[df_t.index.values, ['New job'] * len(df_t.index.values)], y=df_t[n], name=n, marker_color=c),
+            )
+        i += 1
+
+    st.plotly_chart(fig, use_container_width=True)
 
 column_names = [float(i) for i in range(years)]
 df = pd.DataFrame(columns=column_names)
@@ -177,7 +210,8 @@ if data_type == "Yearly":
         st.line_chart(df_t)
     else:  # yearly + bar
         df_t = df.T
-        st.bar_chart(df_t, stack=False)
+        #st.bar_chart(df_t, stack=False)
+        plot_advanced_bar_chart()
 
 elif data_type == "Overall sum":
     # calculate the cumulative sum for each year
@@ -187,9 +221,14 @@ elif data_type == "Overall sum":
         st.line_chart(df_cumsum_t)
     else:
         df_cumsum_t = df_cumsum.T
-        st.bar_chart(df_cumsum_t, stack=False)
+        #st.bar_chart(df_cumsum_t, stack=False)
+        plot_advanced_bar_chart()
 
 st.header("Detailed calculation")
+df_t = df.T
+print("\n df_t_\n", df_t)
+
+
 
 # column configs:
 # create a number float %.1f only for dtype float (-> dynamic names "relevant month)
@@ -203,11 +242,13 @@ for col in column_names:
         format="%.2f k€",
     )
 
-st.dataframe(df, column_config=column_config_float
-             )
+st.dataframe(df, column_config=column_config_float)
 
 st.text("""
 Note: I have deliberately not taken gross/net salary into account here, as this is highly individual. You may enter your 
 gross or net salary, see online gross/net calculators to get your numbers.
 """
-        )
+)
+
+
+
