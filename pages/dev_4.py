@@ -24,14 +24,14 @@ current_job_salary = st.sidebar.number_input("Current Job Salary (k€/year)", m
 new_job_salary = st.sidebar.number_input("New job Salary (k€/year)", min_value=0, value=90)
 salary_increase_input = st.sidebar.number_input("Expected yearly salary increase (%)",
                                                 min_value=0.0,
-                                                value=2.0,
+                                                value=0.0,
                                                 step=0.1)
 salary_increase_rate = salary_increase_input / 100
 
 severance_pay = 0
 severance_annual_rate = 0
-severance = st.sidebar.checkbox("I received a severance pay")
-if severance:
+severance_paid = st.sidebar.checkbox("I received a severance pay")
+if severance_paid:
     severance_pay = st.sidebar.number_input("Severance pay (k€)", min_value=0, value=50, step=1)
     severance_annual_rate = st.sidebar.number_input("Annual payment from severance pay (yearly/k€)", min_value=0, value=10)
 st.write(severance_pay, severance_annual_rate)
@@ -113,7 +113,7 @@ def overall_sum_4_job(df, job_name, column_names) -> float:
 
 
 st.header("Key metrics")
-col_1_1, col_1_2, col_1_3, col_1_4, col_1_5 = st.columns(5)
+col_1_1, col_1_2, col_1_3, col_1_4, col_1_5, col_1_6 = st.columns(6)
 help_salary_new_job_initial = "Your start salary of the new job. With a comparision to your current's job salary."
 col_1_1.metric(f"Salary new job inital",
                value=f"{new_job_salary} k€",
@@ -133,16 +133,27 @@ col_1_3.metric("Overall sum current job",
                help=help_overall_sum_current)
 help_overall_sum_new = "The sum of your new job's salary until your retirement."
 new_job_overall_salary = overall_sum_4_job(df, "New job", column_names)
+
 col_1_4.metric("Overall sum new job",
                value=f"{new_job_overall_salary:.2f} k€",
                help=help_overall_sum_new
                )
-overall_difference = new_job_overall_salary - current_job_overall_salary
-help_overall_delta = f"The is the cumulative salary for the next {years} years. New job vs. current job."
-col_1_5.metric("Overall delta",
-               value=f"{overall_difference:.2f} k€",
+
+help_severance = "Amount of your severance pay, if received"
+col_1_5.metric("Severance pay",
+               value=f"{severance_pay:.2f} k€",
+               help=help_severance
+               )
+
+overall_delta = new_job_overall_salary + severance_pay - current_job_overall_salary
+help_overall_delta = f"The is the cumulative income for the next {years} years, including the severance pay of {severance_pay} k€. New job+severance pay vs. current job."
+col_1_6.metric("Overall delta",
+               value=f"{overall_delta:.2f} k€",
+               delta=f"{overall_delta:.2f} k€",
                help=help_overall_delta)
 
+
+# graphics
 col_3_1, col_3_2, col_3_3, col_3_4 = st.columns([2, 1, 1, 1])
 col_3_1.header("Future development")
 
