@@ -93,7 +93,7 @@ def add_severance_payments(df, severance_pay, annual_payment) -> pd.DataFrame:
     return df
 
 
-column_names = [float(i) for i in range(years + 1)]
+column_names = [float(i) for i in range(years)]
 df = pd.DataFrame(columns=column_names)
 df = add_calculations_salary_in_the_next_years(df, "Current job", current_job_salary, salary_increase_rate)
 df = add_calculations_salary_in_the_next_years(df, "New job", new_job_salary, salary_increase_rate)
