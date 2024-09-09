@@ -108,7 +108,7 @@ def add_severance_payments(df, severance_pay, annual_payment) -> pd.DataFrame:
 
 column_names = [float(i) for i in range(years)]
 df = pd.DataFrame(columns=column_names)
-df.index.name = "Type"
+df.index.name = "Type of income"
 df = add_calculations_salary_in_the_next_years(df, "Current job", current_job_salary, salary_increase_rate)
 df = add_calculations_salary_in_the_next_years(df, "New job", new_job_salary, salary_increase_rate)
 if severance_paid:
@@ -214,7 +214,7 @@ for col in column_names:
         format="%.2f k€",
     )
 # add column config for index / "type"
-#column_config[df.index.name] = st.column_config.TextColumn(width="large")
+column_config[df.index.name] = st.column_config.TextColumn(width=220)
 
 st.dataframe(df, column_config=column_config)
 
