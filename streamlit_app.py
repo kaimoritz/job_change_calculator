@@ -54,6 +54,8 @@ if severance_paid:
                                                     value=10,
                                                     help=help_severance_annual_pay)
 
+st.sidebar.text("") # vertical space
+st.sidebar.write("<sup>Reset: Press 'STRG'+'F5'</sup>", unsafe_allow_html=True)
 
 def calculate_final_salary(start_salary, increase, years):
     final_salary = start_salary * (1 + increase) ** years
