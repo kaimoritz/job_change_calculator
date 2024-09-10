@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import streamlit as st
+import plotly.express as px
 
 st.set_page_config(
     page_title="Job Change Calculator",
@@ -195,13 +196,34 @@ with col_3_4:
         label_visibility="collapsed",
     )
 
+
+def plot_bar_chart(_df):
+    df_long = _df.reset_index().melt(id_vars=TYPE_OF_INCOME, var_name='Year', value_name='Income')
+    fig = px.bar(df_long, x='Year', y='Income', color=TYPE_OF_INCOME, barmode='group')
+    # Layout anpassen, um die Legende unter das Diagramm zu setzen
+    fig.update_layout(
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.3,
+            xanchor="left",
+            x=0.0
+        ),
+        legend_title=None
+    )
+
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
 if data_type == "Yearly":
     if chart_type == "Line":  # yearly + line
         df_t = df.T
         st.line_chart(df_t)
     else:  # yearly + bar
         df_t = df.T
-        st.bar_chart(df_t, stack=False)
+        #st.bar_chart(df_t, stack=False)
+        plot_bar_chart(df)
 
 elif data_type == "Overall sum":
     # calculate the cumulative sum for each year
@@ -211,7 +233,8 @@ elif data_type == "Overall sum":
         st.line_chart(df_cumsum_t)
     else:
         df_cumsum_t = df_cumsum.T
-        st.bar_chart(df_cumsum_t, stack=False)
+        #st.bar_chart(df_cumsum_t, stack=False)
+        plot_bar_chart(df_cumsum)
 
 st.header("Detailed calculation")
 
