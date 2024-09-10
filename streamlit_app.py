@@ -26,13 +26,13 @@ st.sidebar.text("")  # vertical space
 
 # sidebar: parameter input
 help_year="Enter the number of years you want work until retirement."
-years = st.sidebar.number_input("Years until my retirement", min_value=0, max_value=100, value=5, step=1, help=help_year)
+years = st.sidebar.number_input("Years until my retirement", min_value=0, max_value=100, value=10, step=1, help=help_year)
 
 help_current_job_salary = "Enter the salary of your CURRENT job. You can enter your gross or net salary, but then enter gross or net everywhere."
 current_job_salary = st.sidebar.number_input("Current Job Salary (k€/year)", min_value=0, value=100, help=help_current_job_salary)
 
 help_new_job_salary = "Enter the salary of your NEW job. You can enter your gross or net salary, but then enter gross or net everywhere."
-new_job_salary = st.sidebar.number_input("New job Salary (k€/year)", min_value=0, value=90, help=help_new_job_salary)
+new_job_salary = st.sidebar.number_input("New job Salary (k€/year)", min_value=0, value=80, help=help_new_job_salary)
 
 help_salary_increase_input="Enter the expected annual salary increase in percent. E.g. '2.00'%."
 salary_increase_input = st.sidebar.number_input("Expected annual salary increase rate (%)",
@@ -48,11 +48,11 @@ help_compensation_paid= "If you will receive a compensation payment, activate th
 compensation_paid = st.sidebar.checkbox("I will receive a compensation payment", help=help_compensation_paid)
 if compensation_paid:
     help_compensation_payment= "Enter the amount of compensation payment you will receive. You can enter your gross or net salary, but then enter gross or net everywhere."
-    compensation_payment = st.sidebar.number_input("Compensation payment (k€)", min_value=0, value=50, step=1, help=help_compensation_payment)
+    compensation_payment = st.sidebar.number_input("Compensation payment (k€)", min_value=0, value=100, step=1, help=help_compensation_payment)
     help_compensation_annual_payment= "You can use the compensation payment you receive to compensate for a lower salary in your new job. To do this, you pay yourself the desired amount of your compensation payment each year."
     compensation_annual_rate = st.sidebar.number_input("Annual payment from compensation payment (yearly/k€)",
                                                        min_value=0,
-                                                       value=10,
+                                                       value=20,
                                                        help=help_compensation_annual_payment)
 
 st.sidebar.text("") # vertical space
