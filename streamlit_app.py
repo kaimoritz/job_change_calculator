@@ -71,7 +71,7 @@ def add_calculations_salary_in_the_next_years(df, name, initial_salary, salary_i
     # calculate the salaries for the next years
     tmp_salary = initial_salary
     for i in range(1, df.shape[1]):
-        previous_year_salary = data[column_names[i - 1]][0]
+        previous_year_salary = data[column_names[i-1]][0]
         tmp_salary = previous_year_salary * (1 + salary_increase_rate)
         data[column_names[i]] = [tmp_salary]
 
@@ -106,7 +106,7 @@ def add_severance_payments(df, severance_pay, annual_payment) -> pd.DataFrame:
     return df
 
 
-column_names = [float(i) for i in range(years)]
+column_names = [float(i) for i in range(1, years+1)]
 df = pd.DataFrame(columns=column_names)
 df.index.name = "Type of income"
 df = add_calculations_salary_in_the_next_years(df, "Current job", current_job_salary, salary_increase_rate)
@@ -207,8 +207,8 @@ st.header("Detailed calculation")
 column_config = {}
 for col in column_names:
     column_config[col] = st.column_config.NumberColumn(
-        f"+ {int(col)} years",
-        help=f"Your future income in {int(col)} years.",
+        f"{int(col)}. year",
+        help=f"Your future income in the {int(col)}. year.",
         min_value=0,
         # step=1,
         format="%.2f k€",
