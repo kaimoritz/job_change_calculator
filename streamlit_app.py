@@ -13,11 +13,11 @@ st.set_page_config(
         'About': "Version 1.0 | Created by Kai Moritz."
     }
 )
-
+TYPE_OF_INCOME = "Type of income"
 NEW_JOB = "Salary new job"
 CURRENT_JOB = "Salary current Job"
-ANNUAL_SEVERANCE_PAY = "Annual severance pay"
-TOTAL_NEW_JOB = f"Total {NEW_JOB} + {ANNUAL_SEVERANCE_PAY}"
+ANNUAL_SEVERANCE_PAY = "Severance pay (annual)"
+TOTAL_NEW_JOB = f"Total: {NEW_JOB} + {ANNUAL_SEVERANCE_PAY}"
 
 st.logo("images/logo.png")
 
@@ -113,7 +113,7 @@ def add_severance_payments(df, severance_pay, annual_payment) -> pd.DataFrame:
 
 column_names = [float(i) for i in range(1, years+1)]
 df = pd.DataFrame(columns=column_names)
-df.index.name = "Type of income"
+df.index.name = TYPE_OF_INCOME
 df = add_calculations_salary_in_the_next_years(df, CURRENT_JOB, current_job_salary, salary_increase_rate)
 df = add_calculations_salary_in_the_next_years(df, NEW_JOB, new_job_salary, salary_increase_rate)
 if severance_paid:
