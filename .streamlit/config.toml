@@ -16,7 +16,7 @@
 # showWarningOnDirectExecution = true
 
 [theme]
-#base="dark"
+base="dark"
 
 [logger]
 
