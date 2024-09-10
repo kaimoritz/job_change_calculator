@@ -25,16 +25,18 @@ st.logo("images/logo.png")
 st.sidebar.text("")  # vertical space
 
 # sidebar: parameter input
-help_year="Enter the number of years you want work until retirement."
-years = st.sidebar.number_input("Years until my retirement", min_value=0, max_value=100, value=10, step=1, help=help_year)
+help_year = "Enter the number of years you want work until retirement."
+years = st.sidebar.number_input("Years until my retirement", min_value=0, max_value=100, value=10, step=1,
+                                help=help_year)
 
 help_current_job_salary = "Enter the salary of your CURRENT job. You can enter your gross or net salary, but then enter gross or net everywhere."
-current_job_salary = st.sidebar.number_input("Current Job Salary (k€/year)", min_value=0, value=100, help=help_current_job_salary)
+current_job_salary = st.sidebar.number_input("Current Job Salary (k€/year)", min_value=0, value=100,
+                                             help=help_current_job_salary)
 
 help_new_job_salary = "Enter the salary of your NEW job. You can enter your gross or net salary, but then enter gross or net everywhere."
 new_job_salary = st.sidebar.number_input("New job Salary (k€/year)", min_value=0, value=80, help=help_new_job_salary)
 
-help_salary_increase_input="Enter the expected annual salary increase in percent. E.g. '2.00'%."
+help_salary_increase_input = "Enter the expected annual salary increase in percent. E.g. '2.00'%."
 salary_increase_input = st.sidebar.number_input("Expected annual salary increase rate (%)",
                                                 min_value=0.0,
                                                 value=0.0,
@@ -44,22 +46,25 @@ salary_increase_rate = salary_increase_input / 100
 
 compensation_payment = 0
 compensation_annual_rate = 0
-help_compensation_paid= "If you will receive a compensation payment, activate the checkbox and enter your numbers."
+help_compensation_paid = "If you will receive a compensation payment, activate the checkbox and enter your numbers."
 compensation_paid = st.sidebar.checkbox("I will receive a compensation payment", help=help_compensation_paid)
 if compensation_paid:
-    help_compensation_payment= "Enter the amount of compensation payment you will receive. You can enter your gross or net salary, but then enter gross or net everywhere."
-    compensation_payment = st.sidebar.number_input("Compensation payment (k€)", min_value=0, value=100, step=1, help=help_compensation_payment)
-    help_compensation_annual_payment= "You can use the compensation payment you receive to compensate for a lower salary in your new job. To do this, you pay yourself the desired amount of your compensation payment each year."
+    help_compensation_payment = "Enter the amount of compensation payment you will receive. You can enter your gross or net salary, but then enter gross or net everywhere."
+    compensation_payment = st.sidebar.number_input("Compensation payment (k€)", min_value=0, value=100, step=1,
+                                                   help=help_compensation_payment)
+    help_compensation_annual_payment = "You can use the compensation payment you receive to compensate for a lower salary in your new job. To do this, you pay yourself the desired amount of your compensation payment each year."
     compensation_annual_rate = st.sidebar.number_input("Annual payment from compensation payment (yearly/k€)",
                                                        min_value=0,
                                                        value=20,
                                                        help=help_compensation_annual_payment)
 
-st.sidebar.text("") # vertical space
+st.sidebar.text("")  # vertical space
 st.sidebar.write("<sup>Reset: Press 'STRG'+'F5'</sup>", unsafe_allow_html=True)
 
+
 def calculate_final_salary(start_salary, increase, years):
-    final_salary = start_salary * (1 + increase) ** (years -1) # years-1 because the first increase is wfter the first year.
+    final_salary = start_salary * (1 + increase) ** (
+                years - 1)  # years-1 because the first increase is wfter the first year.
     return final_salary
 
 
@@ -79,7 +84,7 @@ def add_calculations_salary_in_the_next_years(df, name, initial_salary, salary_i
     # calculate the salaries for the next years
     tmp_salary = initial_salary
     for i in range(1, df.shape[1]):
-        previous_year_salary = data[column_names[i-1]][0]
+        previous_year_salary = data[column_names[i - 1]][0]
         tmp_salary = previous_year_salary * (1 + salary_increase_rate)
         data[column_names[i]] = [tmp_salary]
 
@@ -114,7 +119,7 @@ def add_compensation_payments(df, compensation_payment, annual_payment) -> pd.Da
     return df
 
 
-column_names = [float(i) for i in range(1, years+1)]
+column_names = [float(i) for i in range(1, years + 1)]
 df = pd.DataFrame(columns=column_names)
 df.index.name = TYPE_OF_INCOME
 df = add_calculations_salary_in_the_next_years(df, CURRENT_JOB, current_job_salary, salary_increase_rate)
@@ -177,15 +182,13 @@ col_1_6.metric("Overall delta",
                delta=f"{overall_delta:.2f} k€",
                help=help_overall_delta)
 
-
-
 col_3_1, col_3_2, col_3_3, col_3_4 = st.columns([3, 1, 1, 1])
 col_3_1.header("Future development of your income")
 
 with col_3_3:
     data_type = st.radio(
         "View",
-        ["Yearly", "Overall sum"],
+        ["Yearly", "Difference", "Overall sum"],
         label_visibility="collapsed"
     )
 
@@ -234,27 +237,80 @@ def plot_line_chart(_df_cumsum):
     )
     st.plotly_chart(fig, use_container_width=True)
 
+
+def plot_difference_bar_chart(_df):
+    if compensation_paid == 0:
+        # -> difference between CURRENT_JOB, NEW_JOB
+        df_diff = _df.loc[[CURRENT_JOB, NEW_JOB]].diff().iloc[1].reset_index()
+        title = f"Difference between {CURRENT_JOB} and {NEW_JOB}"
+    else:
+        # -> difference between CURRENT_JOB, TOTAL_NEW_JOB
+        df_diff = _df.loc[[CURRENT_JOB, TOTAL_NEW_JOB]].diff().iloc[1].reset_index()
+        title = f"Difference between '{CURRENT_JOB}' and '{TOTAL_NEW_JOB}'"
+    df_diff.columns = ['Year', 'Difference']
+    # Differenz-Balkendiagramm mit Farbänderung für negative Werte
+    df_diff['Color'] = df_diff['Difference'].apply(lambda x: 'red' if x < 0 else 'green')
+    fig = px.bar(df_diff,
+                 x='Year',
+                 y='Difference',
+                 title=title,
+                 color='Color',
+                 color_discrete_map={'red': '#D62728', 'green': '#2CA02C'})
+
+    # set y axis to always display the "0"-line
+    y_min = df_diff['Difference'].min()
+    if y_min > - 5.0: y_min = -5.0
+    y_max = df_diff['Difference'].max()
+    if y_max < 5.0: y_max = 5.0
+    fig.update_layout(yaxis=dict(range=[y_min, y_max * 1.1]),
+                      showlegend=False,
+                      )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def plot_difference_line_char(_df):
+    if compensation_paid == 0:
+        # -> difference between CURRENT_JOB, NEW_JOB
+        df_diff = _df.loc[[CURRENT_JOB, NEW_JOB]].diff().iloc[1].reset_index()
+        title = f"Difference between '{CURRENT_JOB}' and '{NEW_JOB}'"
+    else:
+        # -> difference between CURRENT_JOB, TOTAL_NEW_JOB
+        df_diff = _df.loc[[CURRENT_JOB, TOTAL_NEW_JOB]].diff().iloc[1].reset_index()
+        title = f"Difference between '{CURRENT_JOB}' and '{TOTAL_NEW_JOB}'"
+    df_diff.columns = ['Year', 'Difference']
+    fig = px.line(df_diff, x='Year', y='Difference', title=title, markers=True)
+    # set y axis to always display the "0"-line
+    y_min = df_diff['Difference'].min()
+    if y_min > - 5.0: y_min = -5.0
+    y_max = df_diff['Difference'].max()
+    y_max = df_diff['Difference'].max()
+    fig.update_layout(yaxis=dict(range=[y_min, y_max * 1.1]),
+                      showlegend=False, )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
 if data_type == "Yearly":
     if chart_type == "Line":  # yearly + line
-        df_t = df.T
-        #st.line_chart(df_t)
         plot_line_chart(df)
     else:  # yearly + bar
-        df_t = df.T
-        #st.bar_chart(df_t, stack=False)
         plot_bar_chart(df)
 
 elif data_type == "Overall sum":
     # calculate the cumulative sum for each year
     df_cumsum = df.cumsum(axis=1)
     if chart_type == "Line":
-        df_cumsum_t = df_cumsum.T
-        #st.line_chart(df_cumsum_t)
         plot_line_chart(df_cumsum)
     else:
-        df_cumsum_t = df_cumsum.T
-        #st.bar_chart(df_cumsum_t, stack=False)
         plot_bar_chart(df_cumsum)
+
+elif data_type == "Difference":
+    if chart_type == "Line":  # yearly + line
+        plot_difference_line_char(df)
+    else:  # yearly + bar
+        df_t = df.T
+        plot_difference_bar_chart(df)
 
 st.header("Detailed calculation")
 
@@ -278,6 +334,6 @@ st.write("""Note: I have deliberately not taken gross/net salary into account he
 may enter your your gross or net salary, but you should than stick to one type - don't  mix it up. Check out a <a 
 href='https://www.lexware.de/werkzeuge-ebooks/brutto-netto-rechner/' id='gross-net-link'>online gross/net 
 calculators</a> to get your numbers. In particular, the calculation of the net amount of the compensation payment 
-must be considered separately. For more details see <a 
-href='https://www.lexware.de/werkzeuge-ebooks/abfindungsrechner/' id='gross-net-link'> online compensation payment 
+must be considered separately. Compensation payments may have a higher taxation than your salary. For more details see 
+<a href='https://www.lexware.de/werkzeuge-ebooks/abfindungsrechner/' id='gross-net-link'> online compensation payment 
 calculators</a> """, unsafe_allow_html=True)
