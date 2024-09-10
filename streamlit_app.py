@@ -165,17 +165,17 @@ col_1_6.metric("Overall delta",
 
 
 
-col_3_1, col_3_2, col_3_3, col_3_4 = st.columns([2, 1, 1, 2])
+col_3_1, col_3_2, col_3_3, col_3_4 = st.columns([3, 1, 1, 1])
 col_3_1.header("Future development of your income")
 
-with col_3_2:
+with col_3_3:
     data_type = st.radio(
         "View",
         ["Yearly", "Overall sum"],
         label_visibility="collapsed"
     )
 
-with col_3_3:
+with col_3_4:
     chart_type = st.radio(
         "Chart type",
         ["Bar", "Line"],
