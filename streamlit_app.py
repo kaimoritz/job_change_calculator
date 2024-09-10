@@ -13,6 +13,7 @@ st.set_page_config(
         'About': "Version 1.0 | Created by Kai Moritz."
     }
 )
+
 TYPE_OF_INCOME = "Type of income"
 NEW_JOB = "Salary new job"
 CURRENT_JOB = "Salary current Job"
