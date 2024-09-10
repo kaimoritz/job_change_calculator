@@ -346,6 +346,6 @@ st.write("""Note: I have deliberately not taken gross/net salary into account he
 may enter your your gross or net salary, but you should than stick to one type - don't  mix it up. Check out a <a 
 href='https://www.lexware.de/werkzeuge-ebooks/brutto-netto-rechner/' id='gross-net-link'>online gross/net 
 calculators</a> to get your numbers. In particular, the calculation of the net amount of the compensation payment 
-must be considered separately. For more details see <a 
-href='https://www.lexware.de/werkzeuge-ebooks/abfindungsrechner/' id='gross-net-link'> online compensation payment 
+must be considered separately. Compensation payments may have a higher taxation than your salary. For more details see 
+<a href='https://www.lexware.de/werkzeuge-ebooks/abfindungsrechner/' id='gross-net-link'> online compensation payment 
 calculators</a> """, unsafe_allow_html=True)
