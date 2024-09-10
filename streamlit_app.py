@@ -198,9 +198,10 @@ with col_3_4:
 
 
 def plot_bar_chart(_df):
+    # convert df into "longer" format, because it is easier for plotly
     df_long = _df.reset_index().melt(id_vars=TYPE_OF_INCOME, var_name='Year', value_name='Income')
     fig = px.bar(df_long, x='Year', y='Income', color=TYPE_OF_INCOME, barmode='group')
-    # Layout anpassen, um die Legende unter das Diagramm zu setzen
+    # set legend
     fig.update_layout(
         legend=dict(
             orientation="h",
@@ -209,17 +210,35 @@ def plot_bar_chart(_df):
             xanchor="left",
             x=0.0
         ),
-        legend_title=None
+        legend_title=None,
     )
-
-
     st.plotly_chart(fig, use_container_width=True)
 
+
+def plot_line_chart(_df_cumsum):
+    # convert df into "longer" format, because it is easier for plotly
+    df_long = _df_cumsum.reset_index().melt(id_vars=TYPE_OF_INCOME, var_name='Year', value_name='Income')
+    fig = px.line(df_long, x='Year', y='Income', color=TYPE_OF_INCOME, markers=True)
+    fig.update_xaxes(tickmode='linear', dtick=1)  # only full years
+    # set legend
+    fig.update_layout(
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.3,
+            xanchor="center",
+            x=0.5
+        ),
+        legend_title=None,
+        yaxis=dict(range=[0, df_long['Income'].max() * 1.1])  # Y-axis start with '0'
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
 if data_type == "Yearly":
     if chart_type == "Line":  # yearly + line
         df_t = df.T
-        st.line_chart(df_t)
+        #st.line_chart(df_t)
+        plot_line_chart(df)
     else:  # yearly + bar
         df_t = df.T
         #st.bar_chart(df_t, stack=False)
@@ -230,7 +249,8 @@ elif data_type == "Overall sum":
     df_cumsum = df.cumsum(axis=1)
     if chart_type == "Line":
         df_cumsum_t = df_cumsum.T
-        st.line_chart(df_cumsum_t)
+        #st.line_chart(df_cumsum_t)
+        plot_line_chart(df_cumsum)
     else:
         df_cumsum_t = df_cumsum.T
         #st.bar_chart(df_cumsum_t, stack=False)
