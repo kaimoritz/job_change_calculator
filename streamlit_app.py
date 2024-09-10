@@ -185,7 +185,7 @@ col_3_1.header("Future development of your income")
 with col_3_3:
     data_type = st.radio(
         "View",
-        ["Yearly", "Overall sum"],
+        ["Yearly", "Overall sum", "Difference"],
         label_visibility="collapsed"
     )
 
@@ -234,6 +234,64 @@ def plot_line_chart(_df_cumsum):
     )
     st.plotly_chart(fig, use_container_width=True)
 
+
+def plot_difference_bar_chart(_df):
+    # todo: diff for simple mode without compensation payment
+
+    # Differenz zwischen Salary und Investment berechnen
+    df_diff = _df.loc[[CURRENT_JOB, TOTAL_NEW_JOB]].diff().iloc[1].reset_index()
+    df_diff.columns = ['Year', 'Difference']
+    # df_diff['Difference'] = df.loc['Salary'] - df.loc['Investment']
+
+    # Differenz-Balkendiagramm mit Farbänderung für negative Werte
+    df_diff['Color'] = df_diff['Difference'].apply(lambda x: 'red' if x < 0 else 'blue')
+    fig = px.bar(df_diff, x='Year', y='Difference', title='Difference between Salary and Investment', color='Color', color_discrete_map={'red': 'red', 'blue': 'blue'})
+
+    # Y-Achse anpassen, um negative Werte anzuzeigen    ## Differenz-Balkendiagramm
+    y_min = df_diff['Difference'].min()    #fig = px.bar(df_diff, x='Year', y='Difference', title='Difference between Salary and Investment')
+    y_max = df_diff['Difference'].max()    #
+    fig.update_layout(yaxis=dict(range=[y_min, y_max * 1.1]))    ## Y-Achse anpassen, um negative Werte anzuzeigen
+    #y_min = df_diff['Difference'].min()
+    #y_max = df_diff['Difference'].max()
+    #if y_max < 5: y_max=5.0
+    #
+    #fig.update_layout(yaxis=dict(range=[y_min, y_max * 1.1]))
+
+    # Layout anpassen, um die Legende unter das Diagramm zu setzen und den Titel zu entfernen
+    # fig.update_layout(
+    #    legend=dict(
+    #        orientation="h",
+    #        yanchor="bottom",
+    #        y=-0.3,
+    #        xanchor="center",
+    #        x=0.5
+    #    ),
+    #    legend_title=None,
+    #    # yaxis=dict(range=[0, df_long['Income'].max() * 1.1])  # Y-Achse bei 0 beginnen lassen
+    # )
+
+    # Diagramm in Streamlit anzeigen
+
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def plot_difference_line_char(_df):
+    df_diff = _df.loc[[CURRENT_JOB, TOTAL_NEW_JOB]].diff().iloc[1].reset_index()
+    df_diff.columns = ['Year', 'Difference']
+
+
+    # Differenz-Liniendiagramm
+    fig = px.line(df_diff, x='Year', y='Difference', title='Difference between Salary and Investment', markers=True)
+
+    # Y-Achse anpassen, um negative Werte anzuzeigen
+    y_min = df_diff['Difference'].min()
+    y_max = df_diff['Difference'].max()
+    fig.update_layout(yaxis=dict(range=[y_min, y_max * 1.1]))
+
+    # Diagramm in Streamlit anzeigen
+    st.plotly_chart(fig, use_container_width=True)
+
 if data_type == "Yearly":
     if chart_type == "Line":  # yearly + line
         df_t = df.T
@@ -255,6 +313,16 @@ elif data_type == "Overall sum":
         df_cumsum_t = df_cumsum.T
         #st.bar_chart(df_cumsum_t, stack=False)
         plot_bar_chart(df_cumsum)
+
+elif data_type == "Difference":
+    if chart_type == "Line":  # yearly + line
+        #plot_line_chart(df)
+        plot_difference_line_char(df)
+    else:  # yearly + bar
+        df_t = df.T
+        #st.bar_chart(df_t, stack=False)
+        plot_difference_bar_chart(df)
+
 
 st.header("Detailed calculation")
 
