@@ -29,7 +29,7 @@ help_new_job_salary = "Enter the salary of your NEW job. You can enter your gros
 new_job_salary = st.sidebar.number_input("New job Salary (k€/year)", min_value=0, value=90, help=help_new_job_salary)
 
 help_salary_increase_input="Enter the expected annual salary increase in percent. E.g. '2.00'%."
-salary_increase_input = st.sidebar.number_input("Expected yearly salary increase (%)",
+salary_increase_input = st.sidebar.number_input("Expected annual salary increase rate (%)",
                                                 min_value=0.0,
                                                 value=0.0,
                                                 step=0.1,
@@ -38,8 +38,8 @@ salary_increase_rate = salary_increase_input / 100
 
 severance_pay = 0
 severance_annual_rate = 0
-help_severence_paid="If you will receive a severence pay, activate the checkbox and enter your numbers."
-severance_paid = st.sidebar.checkbox("I will receive a severance pay", help=help_severence_paid)
+help_severance_paid= "If you will receive a severance pay, activate the checkbox and enter your numbers."
+severance_paid = st.sidebar.checkbox("I will receive a severance pay", help=help_severance_paid)
 if severance_paid:
     help_severance_pay="Enter the amount of severance pay you will receive. You can enter your gross or net salary, but then enter gross or net everywhere."
     severance_pay = st.sidebar.number_input("Severance pay (k€)", min_value=0, value=50, step=1, help=help_severance_pay)
@@ -126,24 +126,26 @@ def overall_sum_4_job(df, job_name, column_names) -> float:
 
 st.header("Key metrics")
 col_1_1, col_1_2, col_1_3, col_1_4, col_1_5, col_1_6 = st.columns(6)
-help_salary_new_job_initial = "Your start salary of the new job. With a comparision to your current's job salary."
-col_1_1.metric(f"Salary new job inital",
+help_salary_new_job_initial = "Enter your starting salary of the new job. With a comparision to your current's job salary."
+col_1_1.metric(f"Starting salary new job",
                value=f"{new_job_salary} k€",
                delta=f"{new_job_salary - current_job_salary:.2f} k€",
                help=help_salary_new_job_initial)
-help_salary_new_job_final = "Your salary of the new job when you retire. Compared to the current job's salary when you retire."
-col_1_2.metric(f"Salary new job in {years} years",
-               value=f"{new_job_salary_final:.2f} k€",
-               delta=f"{(new_job_salary_final - current_job_salary_final):.2f} k€",
-               help=help_salary_new_job_final
-               )
+if salary_increase_rate > 0.0:
+    help_salary_new_job_final = f"This is the salary of the new job when you retire. This takes into account the 'Expected annual salary increase rate (%)' of {salary_increase_rate}%. Compared to the current job's salary when you retire."
+    col_1_2.metric(f"Salary new job in {years} years",
+                   value=f"{new_job_salary_final:.2f} k€",
+                   delta=f"{(new_job_salary_final - current_job_salary_final):.2f} k€",
+                   help=help_salary_new_job_final
+                   )
 
 current_job_overall_salary = overall_sum_4_job(df, "Current job", column_names)
 help_overall_sum_current = "The sum of your current job's salary until your retirement."
 col_1_3.metric("Overall sum current job",
                value=f"{current_job_overall_salary:.2f} k€",
                help=help_overall_sum_current)
-help_overall_sum_new = "The sum of your new job's salary until your retirement."
+
+help_overall_sum_new = "The sum of your new job's salary until your retirement. Does not include the severance pay."
 new_job_overall_salary = overall_sum_4_job(df, "New job", column_names)
 col_1_4.metric("Overall sum new job",
                value=f"{new_job_overall_salary:.2f} k€",
