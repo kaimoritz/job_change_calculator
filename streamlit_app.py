@@ -14,6 +14,11 @@ st.set_page_config(
     }
 )
 
+NEW_JOB = "Salary new job"
+CURRENT_JOB = "Salary current Job"
+ANNUAL_SEVERANCE_PAY = "Annual severance pay"
+TOTAL_NEW_JOB = f"Total {NEW_JOB} + {ANNUAL_SEVERANCE_PAY}"
+
 st.logo("images/logo.png")
 
 st.sidebar.text("")  # vertical space
@@ -98,10 +103,10 @@ def add_severance_payments(df, severance_pay, annual_payment) -> pd.DataFrame:
                 remaining_balance = 0
 
     # Add new row to DataFrame
-    df.loc["Severance payment"] = payments
+    df.loc[ANNUAL_SEVERANCE_PAY] = payments
 
     # add new row for new job + severance
-    df.loc["Total new job + annual severance"] = np.add(df.loc["New job"], df.loc["Severance payment"])
+    df.loc[TOTAL_NEW_JOB] = np.add(df.loc[NEW_JOB], df.loc[ANNUAL_SEVERANCE_PAY])
 
     return df
 
@@ -109,8 +114,8 @@ def add_severance_payments(df, severance_pay, annual_payment) -> pd.DataFrame:
 column_names = [float(i) for i in range(1, years+1)]
 df = pd.DataFrame(columns=column_names)
 df.index.name = "Type of income"
-df = add_calculations_salary_in_the_next_years(df, "Current job", current_job_salary, salary_increase_rate)
-df = add_calculations_salary_in_the_next_years(df, "New job", new_job_salary, salary_increase_rate)
+df = add_calculations_salary_in_the_next_years(df, CURRENT_JOB, current_job_salary, salary_increase_rate)
+df = add_calculations_salary_in_the_next_years(df, NEW_JOB, new_job_salary, salary_increase_rate)
 if severance_paid:
     df = add_severance_payments(df, severance_pay, severance_annual_rate)
 
@@ -139,14 +144,14 @@ if salary_increase_rate > 0.0:
                    help=help_salary_new_job_final
                    )
 
-current_job_overall_salary = overall_sum_4_job(df, "Current job", column_names)
+current_job_overall_salary = overall_sum_4_job(df, CURRENT_JOB, column_names)
 help_overall_sum_current = "The sum of your current job's salary until your retirement."
 col_1_3.metric("Overall sum current job",
                value=f"{current_job_overall_salary:.2f} k€",
                help=help_overall_sum_current)
 
 help_overall_sum_new = "The sum of your new job's salary until your retirement. Does not include the severance pay."
-new_job_overall_salary = overall_sum_4_job(df, "New job", column_names)
+new_job_overall_salary = overall_sum_4_job(df, NEW_JOB, column_names)
 col_1_4.metric("Overall sum new job",
                value=f"{new_job_overall_salary:.2f} k€",
                help=help_overall_sum_new
