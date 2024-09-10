@@ -21,7 +21,6 @@ ANNUAL_SEVERANCE_PAY = "Severance pay (annual)"
 TOTAL_NEW_JOB = f"Total: {NEW_JOB} + {ANNUAL_SEVERANCE_PAY}"
 
 st.logo("images/logo.png")
-
 st.sidebar.text("")  # vertical space
 
 # sidebar: parameter input
