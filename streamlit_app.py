@@ -30,7 +30,7 @@ NEW_JOB_CUM_SUM = f"Overall sum {NEW_JOB}"
 ANNUAL_COMPENSATION_SUM = f"Overall sum {ANNUAL_COMPENSATION}"
 TOTAL_NEW_JOB_SUM = f"Overall sum {TOTAL_NEW_JOB}"
 DIFFERENCE_NJ_CJ_SUM = f"Overall sum {DIFFERENCE_NJ_CJ}"
-DIFFERENCE_NJ_CJ_COMP = f"Overall sum {DIFFERENCE_NJ_CJ_COMP}"
+DIFFERENCE_NJ_CJ_COMP_SUM = f"Overall sum {DIFFERENCE_NJ_CJ_COMP}"
 
 
 COLOR_CURRENT_JOB = "#83C9FF"
@@ -39,6 +39,19 @@ COLOR_ANNUAL_COMPENSATION = "#FFB74D"
 COLOR_TOTAL_NEW_JOB = "#7F7F7F"
 COLOR_POSITIVE = "#4CAF50"
 COLOR_NEGATIVE = "#E57373"
+
+color_discrete_map = {CURRENT_JOB: COLOR_CURRENT_JOB,
+                      CURRENT_JOB_CUM_SUM: COLOR_CURRENT_JOB,
+                      NEW_JOB: COLOR_NEW_JOB,
+                      NEW_JOB_CUM_SUM: COLOR_NEW_JOB,
+                      ANNUAL_COMPENSATION: COLOR_ANNUAL_COMPENSATION,
+                      ANNUAL_COMPENSATION_SUM: COLOR_ANNUAL_COMPENSATION,
+                      TOTAL_NEW_JOB: COLOR_TOTAL_NEW_JOB,
+                      TOTAL_NEW_JOB_SUM: COLOR_TOTAL_NEW_JOB
+                      }
+
+
+
 
 st.logo("images/logo.png")
 st.sidebar.text("")  # vertical space
@@ -243,10 +256,7 @@ def plot_bar_chart(_df):
                  hover_data={TYPE_OF_INCOME: True, 'Income': True, 'Year': True},
                  title=title,
                  color=TYPE_OF_INCOME,
-                 color_discrete_map={CURRENT_JOB: COLOR_CURRENT_JOB,
-                                     NEW_JOB: COLOR_NEW_JOB,
-                                     ANNUAL_COMPENSATION: COLOR_ANNUAL_COMPENSATION,
-                                     TOTAL_NEW_JOB: COLOR_TOTAL_NEW_JOB},
+                 color_discrete_map=color_discrete_map
                  )
 
     # set legend
@@ -376,7 +386,7 @@ else:
     df_4_comparison = df.loc[[CURRENT_JOB, NEW_JOB, ANNUAL_COMPENSATION, TOTAL_NEW_JOB]]
     df_4_difference = df.loc[[DIFFERENCE_NJ_CJ_COMP]]
 
-# plot comparison char:
+# plot comparison chart:
 if data_type == "Yearly":
     if chart_type == "Line charts":  # yearly + line
         plot_line_chart(df_4_comparison)
@@ -403,11 +413,16 @@ if data_type == "Yearly":
     if chart_type == "Line charts":  # yearly + line
         plot_difference_line_char(df_4_difference)
     else:  # yearly + bar
-        #df_t = df.T
         plot_difference_bar_chart(df_4_difference)
 
 elif data_type == "Overall sum":
     df_4_difference_cumsum = df_4_difference.cumsum(axis=1)
+    df_4_difference_cumsum = df_4_difference_cumsum.rename(index={DIFFERENCE_NJ_CJ: DIFFERENCE_NJ_CJ_SUM,
+                                                                  DIFFERENCE_NJ_CJ_COMP: DIFFERENCE_NJ_CJ_COMP_SUM,
+                                                                  })
+    # append cumsum data to "main" df, because we want to print the df later
+    df = pd.concat([df, df_4_difference_cumsum])
+
     if chart_type == "Line charts":
         plot_difference_line_char(df_4_difference_cumsum)
     else:
@@ -427,7 +442,7 @@ for col in column_names:
         format="%.2f k€",
     )
 # add column config for index / "type"
-column_config[df.index.name] = st.column_config.TextColumn(width=220)
+column_config[df.index.name] = st.column_config.TextColumn(width=300)
 
 st.dataframe(df, column_config=column_config)
 
