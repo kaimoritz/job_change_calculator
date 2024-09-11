@@ -82,12 +82,12 @@ help_compensation_paid = "If you will receive a compensation payment, activate t
 compensation_paid = st.sidebar.checkbox("I will receive a compensation payment", help=help_compensation_paid)
 if compensation_paid:
     help_compensation_payment = "Enter the amount of compensation payment you will receive. You can enter your gross or net salary, but then enter gross or net everywhere."
-    compensation_payment = st.sidebar.number_input("Compensation payment (k€)", min_value=0, value=100, step=1,
+    compensation_payment = st.sidebar.number_input("Compensation payment (k€)", min_value=0, value=90, step=1,
                                                    help=help_compensation_payment)
     help_compensation_annual_payment = "You can use the compensation payment you receive to compensate for a lower salary in your new job. To do this, you pay yourself the desired amount of your compensation payment each year."
     compensation_annual_rate = st.sidebar.number_input("Annual payment from compensation payment (yearly/k€)",
                                                        min_value=0,
-                                                       value=20,
+                                                       value=25,
                                                        help=help_compensation_annual_payment)
 
 st.sidebar.text("")  # vertical space
@@ -291,10 +291,7 @@ def plot_line_chart(_df_cumsum):
                   hover_data={TYPE_OF_INCOME: True, 'Income': True, 'Year': False},
                   color=TYPE_OF_INCOME,
                   title=title,
-                  color_discrete_map={CURRENT_JOB: COLOR_CURRENT_JOB,
-                                      NEW_JOB: COLOR_NEW_JOB,
-                                      ANNUAL_COMPENSATION: COLOR_ANNUAL_COMPENSATION,
-                                      TOTAL_NEW_JOB: COLOR_TOTAL_NEW_JOB},
+                  color_discrete_map=color_discrete_map,
                   markers=True)
 
     fig.update_xaxes(tickmode='linear', dtick=1)  # only full years
@@ -354,20 +351,22 @@ def plot_difference_bar_chart(df_diff):
     st.plotly_chart(fig, use_container_width=True)
 
 
-def plot_difference_line_char(_df):
+def plot_difference_line_char(df_diff):
+    df_diff_t = df_diff.T
+    df_diff_t = df_diff_t.reset_index()
     if compensation_paid == 0:
         # -> difference between CURRENT_JOB, NEW_JOB
-        df_diff = _df.loc[[CURRENT_JOB, NEW_JOB]].diff().iloc[1].reset_index()
+        #df_diff = _df.loc[[CURRENT_JOB, NEW_JOB]].diff().iloc[1].reset_index()
         title = f"Difference between '{CURRENT_JOB}' and '{NEW_JOB}'"
     else:
         # -> difference between CURRENT_JOB, TOTAL_NEW_JOB
-        df_diff = _df.loc[[CURRENT_JOB, TOTAL_NEW_JOB]].diff().iloc[1].reset_index()
+        #df_diff = _df.loc[[CURRENT_JOB, TOTAL_NEW_JOB]].diff().iloc[1].reset_index()
         title = f"Difference between '{CURRENT_JOB}' and '{TOTAL_NEW_JOB}'"
-    df_diff.columns = ['Year', 'Difference']
-    fig = px.line(df_diff, x='Year', y='Difference', title=title, markers=True)
+    df_diff_t.columns = ['Year', 'Difference']
+    fig = px.line(df_diff_t, x='Year', y='Difference', title=title, markers=True)
     # set y axis to always display the "0"-line
-    y_min = min(df_diff['Difference'].min(), -5.0)
-    y_max = max(df_diff['Difference'].max(), 5.0)
+    y_min = min(df_diff_t['Difference'].min(), -5.0)
+    y_max = max(df_diff_t['Difference'].max(), 5.0)
     fig.update_layout(yaxis=dict(range=[y_min, y_max * 1.1]),
                       yaxis_title="Income (k€)",
                       showlegend=False,
@@ -442,9 +441,9 @@ for col in column_names:
         format="%.2f k€",
     )
 # add column config for index / "type"
-column_config[df.index.name] = st.column_config.TextColumn(width=300)
+column_config[df.index.name] = st.column_config.TextColumn(width=400)
 
-st.dataframe(df, column_config=column_config)
+st.dataframe(df, column_config=column_config, use_container_width=True)
 
 
 st.write("""Note: I have deliberately not taken gross/net salary into account here, as this is highly individual. You 
