@@ -18,8 +18,10 @@ st.set_page_config(
 TYPE_OF_INCOME = "Type of income"
 CURRENT_JOB = "Salary current Job"
 NEW_JOB = "Salary new job"
-ANNUAL_COMPENSATIOIN = "Compensation payment (annual)"
-TOTAL_NEW_JOB = f"Total: {NEW_JOB} + {ANNUAL_COMPENSATIOIN}"
+ANNUAL_COMPENSATION = "Compensation payment (annual)"
+TOTAL_NEW_JOB = f"Total: {NEW_JOB} + {ANNUAL_COMPENSATION}"
+DIFFERENCE_NJ_CJ = f"Difference {NEW_JOB} vs. {CURRENT_JOB}"
+DIFFERENCE_NJ_CJ_COMP = f"Difference {NEW_JOB} vs {CURRENT_JOB} + {ANNUAL_COMPENSATION}"
 
 COLOR_CURRENT_JOB = "#83C9FF"
 COLOR_NEW_JOB = "#0068C9"
@@ -118,12 +120,20 @@ def add_compensation_payments(df, compensation_payment, annual_payment) -> pd.Da
                 remaining_balance = 0
 
     # Add new row to DataFrame
-    df.loc[ANNUAL_COMPENSATIOIN] = payments
+    df.loc[ANNUAL_COMPENSATION] = payments
 
     # add new row for new job + compensation
-    df.loc[TOTAL_NEW_JOB] = np.add(df.loc[NEW_JOB], df.loc[ANNUAL_COMPENSATIOIN])
+    df.loc[TOTAL_NEW_JOB] = np.add(df.loc[NEW_JOB], df.loc[ANNUAL_COMPENSATION])
 
     return df
+
+def add_calculations_differences_in_the_next_years(df):
+    if compensation_paid == 0:
+        df.loc[DIFFERENCE_NJ_CJ] = df.loc[NEW_JOB] - df.loc[CURRENT_JOB]
+    else:
+        df.loc[DIFFERENCE_NJ_CJ_COMP] = df.loc[NEW_JOB] + df.loc[ANNUAL_COMPENSATION] - df.loc[CURRENT_JOB]
+    return df
+
 
 
 column_names = [float(i) for i in range(1, years + 1)]
@@ -133,6 +143,7 @@ df = add_calculations_salary_in_the_next_years(df, CURRENT_JOB, current_job_sala
 df = add_calculations_salary_in_the_next_years(df, NEW_JOB, new_job_salary, salary_increase_rate)
 if compensation_paid:
     df = add_compensation_payments(df, compensation_payment, compensation_annual_rate)
+df = add_calculations_differences_in_the_next_years(df)
 
 df.columns = df.columns.astype(float)
 df = df.sort_index(axis=1)
@@ -224,7 +235,7 @@ def plot_bar_chart(_df):
                  color=TYPE_OF_INCOME,
                  color_discrete_map={CURRENT_JOB: COLOR_CURRENT_JOB,
                                      NEW_JOB: COLOR_NEW_JOB,
-                                     ANNUAL_COMPENSATIOIN: COLOR_ANNUAL_COMPENSATION,
+                                     ANNUAL_COMPENSATION: COLOR_ANNUAL_COMPENSATION,
                                      TOTAL_NEW_JOB: COLOR_TOTAL_NEW_JOB},
                  )
 
@@ -262,7 +273,7 @@ def plot_line_chart(_df_cumsum):
                   title=title,
                   color_discrete_map={CURRENT_JOB: COLOR_CURRENT_JOB,
                                       NEW_JOB: COLOR_NEW_JOB,
-                                      ANNUAL_COMPENSATIOIN: COLOR_ANNUAL_COMPENSATION,
+                                      ANNUAL_COMPENSATION: COLOR_ANNUAL_COMPENSATION,
                                       TOTAL_NEW_JOB: COLOR_TOTAL_NEW_JOB},
                   markers=True)
 
@@ -346,20 +357,24 @@ def plot_difference_line_char(_df):
 
     st.plotly_chart(fig, use_container_width=True)
 
+if compensation_paid == 0:
+    df_4_comparison = df.loc[[CURRENT_JOB, NEW_JOB]]
+else:
+    df_4_comparison = df.loc[[CURRENT_JOB, NEW_JOB, ANNUAL_COMPENSATION, TOTAL_NEW_JOB]]
 
 if data_type == "Yearly":
     if chart_type == "Line charts":  # yearly + line
-        plot_line_chart(df)
+        plot_line_chart(df_4_comparison)
     else:  # yearly + bar
-        plot_bar_chart(df)
+        plot_bar_chart(df_4_comparison)
 
 elif data_type == "Overall sum":
     # calculate the cumulative sum for each year
-    df_cumsum = df.cumsum(axis=1)
+    df_4_comparison_cumsum = df_4_comparison.cumsum(axis=1)
     if chart_type == "Line charts":
-        plot_line_chart(df_cumsum)
+        plot_line_chart(df_4_comparison_cumsum)
     else:
-        plot_bar_chart(df_cumsum)
+        plot_bar_chart(df_4_comparison_cumsum)
 
 if chart_type == "Line charts":  # yearly + line
     plot_difference_line_char(df)
