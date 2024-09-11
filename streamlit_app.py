@@ -195,12 +195,12 @@ if salary_increase_rate > 0.0:
                    )
 
 current_job_overall_salary = overall_sum_4_job(df, CURRENT_JOB, column_names)
-help_overall_sum_current = "The sum of your current job's salary until your retirement."
+help_overall_sum_current = "The cumulative sum of your current job's salary until your retirement."
 col_1_3.metric("Overall sum current job",
                value=f"{current_job_overall_salary:.2f} k€",
                help=help_overall_sum_current)
 
-help_overall_sum_new = "The sum of your new job's salary until your retirement. Does not include the compensation payment."
+help_overall_sum_new = "The cumulative sum of your new job's salary until your retirement. Does not include the compensation payment."
 new_job_overall_salary = overall_sum_4_job(df, NEW_JOB, column_names)
 col_1_4.metric("Overall sum new job",
                value=f"{new_job_overall_salary:.2f} k€",
@@ -208,7 +208,7 @@ col_1_4.metric("Overall sum new job",
                )
 
 help_compenstation = "Amount of your compensation payment, if received"
-col_1_5.metric("Severance pay",
+col_1_5.metric("Compensation payment",
                value=f"{compensation_payment:.2f} k€",
                help=help_compenstation
                )
