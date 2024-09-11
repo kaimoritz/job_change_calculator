@@ -32,13 +32,14 @@ TOTAL_NEW_JOB_SUM = f"Overall sum {TOTAL_NEW_JOB}"
 DIFFERENCE_NJ_CJ_SUM = f"Overall sum {DIFFERENCE_NJ_CJ}"
 DIFFERENCE_NJ_CJ_COMP_SUM = f"Overall sum {DIFFERENCE_NJ_CJ_COMP}"
 
-
+# color scheme for the charts
 COLOR_CURRENT_JOB = "#83C9FF"
 COLOR_NEW_JOB = "#0068C9"
 COLOR_ANNUAL_COMPENSATION = "#FFB74D"
 COLOR_TOTAL_NEW_JOB = "#7F7F7F"
 COLOR_POSITIVE = "#4CAF50"
 COLOR_NEGATIVE = "#E57373"
+COLOR_DIFFERENCE = "#9C27B0"
 
 color_discrete_map = {CURRENT_JOB: COLOR_CURRENT_JOB,
                       CURRENT_JOB_CUM_SUM: COLOR_CURRENT_JOB,
@@ -49,9 +50,6 @@ color_discrete_map = {CURRENT_JOB: COLOR_CURRENT_JOB,
                       TOTAL_NEW_JOB: COLOR_TOTAL_NEW_JOB,
                       TOTAL_NEW_JOB_SUM: COLOR_TOTAL_NEW_JOB
                       }
-
-
-
 
 st.logo("images/logo.png")
 st.sidebar.text("")  # vertical space
@@ -96,7 +94,7 @@ st.sidebar.write("<sup>Reset: Press 'STRG'+'F5'</sup>", unsafe_allow_html=True)
 
 def calculate_final_salary(start_salary, increase, years):
     final_salary = start_salary * (1 + increase) ** (
-            years - 1)  # years-1 because the first increase is wfter the first year.
+            years - 1)  # years-1 because the first increase is after the first year.
     return final_salary
 
 
@@ -127,7 +125,7 @@ def add_calculations_salary_in_the_next_years(df, name, initial_salary, salary_i
 
 
 def add_compensation_payments(df, compensation_payment, annual_payment) -> pd.DataFrame:
-    # Calculation of payments
+    # calculation of payments
     payments = []
     remaining_balance = compensation_payment
 
@@ -150,13 +148,13 @@ def add_compensation_payments(df, compensation_payment, annual_payment) -> pd.Da
 
     return df
 
+
 def add_calculations_differences_in_the_next_years(df):
     if compensation_paid == 0:
         df.loc[DIFFERENCE_NJ_CJ] = df.loc[NEW_JOB] - df.loc[CURRENT_JOB]
     else:
         df.loc[DIFFERENCE_NJ_CJ_COMP] = df.loc[NEW_JOB] + df.loc[ANNUAL_COMPENSATION] - df.loc[CURRENT_JOB]
     return df
-
 
 
 column_names = [float(i) for i in range(1, years + 1)]
@@ -246,6 +244,8 @@ def plot_bar_chart(_df):
         title = "Comparison of current salary and new salary"
     else:
         title = "Comparison of current salary and new salary with compensation payment"
+    if data_type == "Overall sum":
+        title = title + " (cumulative overall sum)"
 
     # convert df into "longer" format, because it is easier for plotly
     df_long = _df.reset_index().melt(id_vars=TYPE_OF_INCOME, var_name='Year', value_name='Income')
@@ -282,6 +282,8 @@ def plot_line_chart(_df_cumsum):
         title = "Comparison of current salary and new salary"
     else:
         title = "Comparison of current salary and new salary with compensation payment"
+    if data_type == "Overall sum":
+        title = title + " (cumulative overall sum)"
 
     # convert df into "longer" format, because it is easier for plotly
     df_long = _df_cumsum.reset_index().melt(id_vars=TYPE_OF_INCOME, var_name='Year', value_name='Income')
@@ -315,16 +317,17 @@ def plot_line_chart(_df_cumsum):
 
 
 def plot_difference_bar_chart(df_diff):
-    df_diff_t = df_diff.T
-    df_diff_t = df_diff_t.reset_index()
     if compensation_paid == 0:
         # -> difference between CURRENT_JOB, NEW_JOB
-        #df_diff = _df.loc[[CURRENT_JOB, NEW_JOB]].diff().iloc[1].reset_index()
         title = f"Difference between {CURRENT_JOB} and {NEW_JOB}"
     else:
         # -> difference between CURRENT_JOB, TOTAL_NEW_JOB
-        #df_diff = _df.loc[[CURRENT_JOB, TOTAL_NEW_JOB]].diff().iloc[1].reset_index()
         title = f"Difference between '{CURRENT_JOB}' and '{TOTAL_NEW_JOB}'"
+    if data_type == "Overall sum":
+        title = title + " (cumulative overall sum)"
+
+    df_diff_t = df_diff.T
+    df_diff_t = df_diff_t.reset_index()
     df_diff_t.columns = ['Year', 'Difference']
     # add colors: negative is red, positive is green
     df_diff_t['Color'] = df_diff_t['Difference'].apply(lambda x: 'red' if x < 0 else 'green')
@@ -352,18 +355,23 @@ def plot_difference_bar_chart(df_diff):
 
 
 def plot_difference_line_char(df_diff):
-    df_diff_t = df_diff.T
-    df_diff_t = df_diff_t.reset_index()
     if compensation_paid == 0:
         # -> difference between CURRENT_JOB, NEW_JOB
-        #df_diff = _df.loc[[CURRENT_JOB, NEW_JOB]].diff().iloc[1].reset_index()
         title = f"Difference between '{CURRENT_JOB}' and '{NEW_JOB}'"
     else:
         # -> difference between CURRENT_JOB, TOTAL_NEW_JOB
-        #df_diff = _df.loc[[CURRENT_JOB, TOTAL_NEW_JOB]].diff().iloc[1].reset_index()
         title = f"Difference between '{CURRENT_JOB}' and '{TOTAL_NEW_JOB}'"
+
+    if data_type == "Overall sum":
+        title = title + " (cumulative overall sum)"
+
+    df_diff_t = df_diff.T
+    df_diff_t = df_diff_t.reset_index()
     df_diff_t.columns = ['Year', 'Difference']
-    fig = px.line(df_diff_t, x='Year', y='Difference', title=title, markers=True)
+    fig = px.line(df_diff_t, x='Year', y='Difference', title=title, markers=True, )
+
+    fig.update_traces(line=dict(color=COLOR_DIFFERENCE))
+
     # set y axis to always display the "0"-line
     y_min = min(df_diff_t['Difference'].min(), -5.0)
     y_max = max(df_diff_t['Difference'].max(), 5.0)
@@ -378,6 +386,8 @@ def plot_difference_line_char(df_diff):
 
     st.plotly_chart(fig, use_container_width=True)
 
+
+# generate the dataframes for the different chart types (comparison/difference) and view modes (Yearly/Overall sum)
 if compensation_paid == 0:
     df_4_comparison = df.loc[[CURRENT_JOB, NEW_JOB]]
     df_4_difference = df.loc[[DIFFERENCE_NJ_CJ]]
@@ -393,7 +403,7 @@ if data_type == "Yearly":
         plot_bar_chart(df_4_comparison)
 
 elif data_type == "Overall sum":
-    # calculate the cumulative sum for each year
+    # calculate the cumulative/overall sum for each year
     df_4_comparison_cumsum = df_4_comparison.cumsum(axis=1)
     df_4_comparison_cumsum = df_4_comparison_cumsum.rename(index={CURRENT_JOB: CURRENT_JOB_CUM_SUM,
                                                                   NEW_JOB: NEW_JOB_CUM_SUM,
@@ -441,15 +451,19 @@ for col in column_names:
         format="%.2f k€",
     )
 # add column config for index / "type"
-column_config[df.index.name] = st.column_config.TextColumn(width=400)
+# column_config[df.index.name] = st.column_config.TextColumn(width=500)
 
 st.dataframe(df, column_config=column_config, use_container_width=True)
 
+st.text(" ")
+st.text(" ")
+st.text(" ")
 
-st.write("""Note: I have deliberately not taken gross/net salary into account here, as this is highly individual. You 
-may enter your your gross or net salary, but you should than stick to one type - don't  mix it up. Check out a <a 
-href='https://www.lexware.de/werkzeuge-ebooks/brutto-netto-rechner/' id='gross-net-link'>online gross/net 
-calculators</a> to get your numbers. In particular, the calculation of the net amount of the compensation payment 
-must be considered separately. Compensation payments may have a higher taxation than your salary. For more details see 
-<a href='https://www.lexware.de/werkzeuge-ebooks/abfindungsrechner/' id='gross-net-link'> online compensation payment 
-calculators</a> """, unsafe_allow_html=True)
+st.write("""Note: I have deliberately not taken gross-net salary into account here, as this is highly individual. You 
+may enter your your gross or net salary, but you should than stick to one type - don't  mix it up.""")
+
+st.write("💡", """Start with your gross salary to get a quick overview. If you want a better result, go to an <a 
+href='https://www.lexware.de/werkzeuge-ebooks/brutto-netto-rechner/' id='gross-net-link'>online gross-net 
+calculator</a> to calculate your real net salary and your <a 
+href='https://www.lexware.de/werkzeuge-ebooks/abfindungsrechner/' id='gross-net-link'> net compensation payment</a>.""",
+         unsafe_allow_html=True)
