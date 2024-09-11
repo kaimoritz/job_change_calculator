@@ -15,6 +15,7 @@ st.set_page_config(
     }
 )
 
+# income types (index values for dataframe) for "normal" yearly view:
 TYPE_OF_INCOME = "Type of income"
 CURRENT_JOB = "Salary current Job"
 NEW_JOB = "Salary new job"
@@ -22,6 +23,15 @@ ANNUAL_COMPENSATION = "Compensation payment (annual)"
 TOTAL_NEW_JOB = f"Total: {NEW_JOB} + {ANNUAL_COMPENSATION}"
 DIFFERENCE_NJ_CJ = f"Difference {NEW_JOB} vs. {CURRENT_JOB}"
 DIFFERENCE_NJ_CJ_COMP = f"Difference {NEW_JOB} vs {CURRENT_JOB} + {ANNUAL_COMPENSATION}"
+
+# income types (index values for dataframe) for cummulated "Overall sum":
+CURRENT_JOB_CUM_SUM = f"Overall sum {CURRENT_JOB}"
+NEW_JOB_CUM_SUM = f"Overall sum {NEW_JOB}"
+ANNUAL_COMPENSATION_SUM = f"Overall sum {ANNUAL_COMPENSATION}"
+TOTAL_NEW_JOB_SUM = f"Overall sum {TOTAL_NEW_JOB}"
+DIFFERENCE_NJ_CJ_SUM = f"Overall sum {DIFFERENCE_NJ_CJ}"
+DIFFERENCE_NJ_CJ_COMP = f"Overall sum {DIFFERENCE_NJ_CJ_COMP}"
+
 
 COLOR_CURRENT_JOB = "#83C9FF"
 COLOR_NEW_JOB = "#0068C9"
@@ -297,19 +307,21 @@ def plot_line_chart(_df_cumsum):
     st.plotly_chart(fig, use_container_width=True)
 
 
-def plot_difference_bar_chart(_df):
+def plot_difference_bar_chart(df_diff):
+    df_diff_t = df_diff.T
+    df_diff_t = df_diff_t.reset_index()
     if compensation_paid == 0:
         # -> difference between CURRENT_JOB, NEW_JOB
-        df_diff = _df.loc[[CURRENT_JOB, NEW_JOB]].diff().iloc[1].reset_index()
+        #df_diff = _df.loc[[CURRENT_JOB, NEW_JOB]].diff().iloc[1].reset_index()
         title = f"Difference between {CURRENT_JOB} and {NEW_JOB}"
     else:
         # -> difference between CURRENT_JOB, TOTAL_NEW_JOB
-        df_diff = _df.loc[[CURRENT_JOB, TOTAL_NEW_JOB]].diff().iloc[1].reset_index()
+        #df_diff = _df.loc[[CURRENT_JOB, TOTAL_NEW_JOB]].diff().iloc[1].reset_index()
         title = f"Difference between '{CURRENT_JOB}' and '{TOTAL_NEW_JOB}'"
-    df_diff.columns = ['Year', 'Difference']
+    df_diff_t.columns = ['Year', 'Difference']
     # add colors: negative is red, positive is green
-    df_diff['Color'] = df_diff['Difference'].apply(lambda x: 'red' if x < 0 else 'green')
-    fig = px.bar(df_diff,
+    df_diff_t['Color'] = df_diff_t['Difference'].apply(lambda x: 'red' if x < 0 else 'green')
+    fig = px.bar(df_diff_t,
                  x='Year',
                  y='Difference',
                  hover_data={'Difference': True, 'Year': True, "Color": False},
@@ -318,8 +330,8 @@ def plot_difference_bar_chart(_df):
                  color_discrete_map={'red': COLOR_NEGATIVE, 'green': COLOR_POSITIVE})
 
     # set y axis to always display the "0"-line
-    y_min = min(df_diff['Difference'].min(), -5.0)
-    y_max = max(df_diff['Difference'].max(), 5.0)
+    y_min = min(df_diff_t['Difference'].min(), -5.0)
+    y_max = max(df_diff_t['Difference'].max(), 5.0)
     fig.update_layout(yaxis=dict(range=[y_min, y_max * 1.1]),
                       yaxis_title="Difference (k€)",
                       showlegend=False,
@@ -359,9 +371,12 @@ def plot_difference_line_char(_df):
 
 if compensation_paid == 0:
     df_4_comparison = df.loc[[CURRENT_JOB, NEW_JOB]]
+    df_4_difference = df.loc[[DIFFERENCE_NJ_CJ]]
 else:
     df_4_comparison = df.loc[[CURRENT_JOB, NEW_JOB, ANNUAL_COMPENSATION, TOTAL_NEW_JOB]]
+    df_4_difference = df.loc[[DIFFERENCE_NJ_CJ_COMP]]
 
+# plot comparison char:
 if data_type == "Yearly":
     if chart_type == "Line charts":  # yearly + line
         plot_line_chart(df_4_comparison)
@@ -371,16 +386,32 @@ if data_type == "Yearly":
 elif data_type == "Overall sum":
     # calculate the cumulative sum for each year
     df_4_comparison_cumsum = df_4_comparison.cumsum(axis=1)
+    df_4_comparison_cumsum = df_4_comparison_cumsum.rename(index={CURRENT_JOB: CURRENT_JOB_CUM_SUM,
+                                                                  NEW_JOB: NEW_JOB_CUM_SUM,
+                                                                  ANNUAL_COMPENSATION: ANNUAL_COMPENSATION_SUM,
+                                                                  TOTAL_NEW_JOB: TOTAL_NEW_JOB_SUM
+                                                                  })
+    # append cumsum data to "main" df, because we want to print the df later
+    df = pd.concat([df, df_4_comparison_cumsum])
     if chart_type == "Line charts":
         plot_line_chart(df_4_comparison_cumsum)
     else:
         plot_bar_chart(df_4_comparison_cumsum)
 
-if chart_type == "Line charts":  # yearly + line
-    plot_difference_line_char(df)
-else:  # yearly + bar
-    df_t = df.T
-    plot_difference_bar_chart(df)
+# plot difference chart:
+if data_type == "Yearly":
+    if chart_type == "Line charts":  # yearly + line
+        plot_difference_line_char(df_4_difference)
+    else:  # yearly + bar
+        #df_t = df.T
+        plot_difference_bar_chart(df_4_difference)
+
+elif data_type == "Overall sum":
+    df_4_difference_cumsum = df_4_difference.cumsum(axis=1)
+    if chart_type == "Line charts":
+        plot_difference_line_char(df_4_difference_cumsum)
+    else:
+        plot_difference_bar_chart(df_4_difference_cumsum)
 
 st.header("Detailed calculation")
 
@@ -399,6 +430,7 @@ for col in column_names:
 column_config[df.index.name] = st.column_config.TextColumn(width=220)
 
 st.dataframe(df, column_config=column_config)
+
 
 st.write("""Note: I have deliberately not taken gross/net salary into account here, as this is highly individual. You 
 may enter your your gross or net salary, but you should than stick to one type - don't  mix it up. Check out a <a 
