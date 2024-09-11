@@ -25,8 +25,8 @@ COLOR_CURRENT_JOB = "#83C9FF"
 COLOR_NEW_JOB = "#0068C9"
 COLOR_ANNUAL_COMPENSATION = "#FFB74D"
 COLOR_TOTAL_NEW_JOB = "#7F7F7F"
-COLOR_POSITIVE ="#4CAF50"
-COLOR_NEGATIVE ="#E57373"
+COLOR_POSITIVE = "#4CAF50"
+COLOR_NEGATIVE = "#E57373"
 
 st.logo("images/logo.png")
 st.sidebar.text("")  # vertical space
@@ -71,7 +71,7 @@ st.sidebar.write("<sup>Reset: Press 'STRG'+'F5'</sup>", unsafe_allow_html=True)
 
 def calculate_final_salary(start_salary, increase, years):
     final_salary = start_salary * (1 + increase) ** (
-                years - 1)  # years-1 because the first increase is wfter the first year.
+            years - 1)  # years-1 because the first increase is wfter the first year.
     return final_salary
 
 
@@ -195,33 +195,38 @@ col_3_1.header("Future development of your income")
 with col_3_3:
     data_type = st.radio(
         "View",
-        ["Yearly", "Difference", "Overall sum"],
+        ["Yearly", "Overall sum"],
         label_visibility="collapsed"
     )
 
 with col_3_4:
     chart_type = st.radio(
         "Chart type",
-        ["Bar", "Line"],
+        ["Bar charts", "Line charts"],
         label_visibility="collapsed",
     )
 
 
 def plot_bar_chart(_df):
+    if compensation_paid == 0:
+        title = "Comparison of current salary and new salary"
+    else:
+        title = "Comparison of current salary and new salary with compensation payment"
+
     # convert df into "longer" format, because it is easier for plotly
     df_long = _df.reset_index().melt(id_vars=TYPE_OF_INCOME, var_name='Year', value_name='Income')
     fig = px.bar(df_long,
                  x='Year',
                  y='Income',
                  barmode='group',
+                 hover_data={TYPE_OF_INCOME: True, 'Income': True, 'Year': True},
+                 title=title,
                  color=TYPE_OF_INCOME,
                  color_discrete_map={CURRENT_JOB: COLOR_CURRENT_JOB,
                                      NEW_JOB: COLOR_NEW_JOB,
                                      ANNUAL_COMPENSATIOIN: COLOR_ANNUAL_COMPENSATION,
                                      TOTAL_NEW_JOB: COLOR_TOTAL_NEW_JOB},
                  )
-
-
 
     # set legend
     fig.update_layout(
@@ -233,19 +238,28 @@ def plot_bar_chart(_df):
             x=0.5
         ),
         legend_title=None,
-        yaxis_title="Income (k€)"
+        yaxis_title="Income (k€)",
+        title_font=dict(size=14, family="Arial", weight="normal"),
+        title_x=0.0,
+        title_y=0.85
     )
     st.plotly_chart(fig, use_container_width=True)
 
 
-
 def plot_line_chart(_df_cumsum):
+    if compensation_paid == 0:
+        title = "Comparison of current salary and new salary"
+    else:
+        title = "Comparison of current salary and new salary with compensation payment"
+
     # convert df into "longer" format, because it is easier for plotly
     df_long = _df_cumsum.reset_index().melt(id_vars=TYPE_OF_INCOME, var_name='Year', value_name='Income')
     fig = px.line(df_long,
                   x='Year',
                   y='Income',
+                  hover_data={TYPE_OF_INCOME: True, 'Income': True, 'Year': False},
                   color=TYPE_OF_INCOME,
+                  title=title,
                   color_discrete_map={CURRENT_JOB: COLOR_CURRENT_JOB,
                                       NEW_JOB: COLOR_NEW_JOB,
                                       ANNUAL_COMPENSATIOIN: COLOR_ANNUAL_COMPENSATION,
@@ -263,6 +277,9 @@ def plot_line_chart(_df_cumsum):
             x=0.5
         ),
         legend_title=None,
+        title_font=dict(size=14, family="Arial", weight="normal"),
+        title_x=0.0,
+        title_y=0.85,
         yaxis=dict(range=[0, df_long['Income'].max() * 1.1]),  # Y-axis start with '0'
         yaxis_title="Income (k€)"
     )
@@ -284,6 +301,7 @@ def plot_difference_bar_chart(_df):
     fig = px.bar(df_diff,
                  x='Year',
                  y='Difference',
+                 hover_data={'Difference': True, 'Year': True, "Color": False},
                  title=title,
                  color='Color',
                  color_discrete_map={'red': COLOR_NEGATIVE, 'green': COLOR_POSITIVE})
@@ -294,9 +312,10 @@ def plot_difference_bar_chart(_df):
     fig.update_layout(yaxis=dict(range=[y_min, y_max * 1.1]),
                       yaxis_title="Difference (k€)",
                       showlegend=False,
+                      height=350,
                       title_font=dict(size=14, family="Arial", weight="normal"),
-                      title_x=0.25,  # centered title
-                      title_y=0.0  # title below the chart
+                      title_x=0.0,
+                      title_y=0.85
                       )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -319,16 +338,17 @@ def plot_difference_line_char(_df):
     fig.update_layout(yaxis=dict(range=[y_min, y_max * 1.1]),
                       yaxis_title="Income (k€)",
                       showlegend=False,
+                      height=350,
                       title_font=dict(size=14, family="Arial", weight="normal"),
-                      title_x=0.25, # centered title
-                      title_y=0.0 # title below the chart
+                      title_x=0.0,
+                      title_y=0.85
                       )
 
     st.plotly_chart(fig, use_container_width=True)
 
 
 if data_type == "Yearly":
-    if chart_type == "Line":  # yearly + line
+    if chart_type == "Line charts":  # yearly + line
         plot_line_chart(df)
     else:  # yearly + bar
         plot_bar_chart(df)
@@ -336,19 +356,16 @@ if data_type == "Yearly":
 elif data_type == "Overall sum":
     # calculate the cumulative sum for each year
     df_cumsum = df.cumsum(axis=1)
-    if chart_type == "Line":
+    if chart_type == "Line charts":
         plot_line_chart(df_cumsum)
     else:
         plot_bar_chart(df_cumsum)
 
-elif data_type == "Difference":
-    if chart_type == "Line":  # yearly + line
-        plot_difference_line_char(df)
-    else:  # yearly + bar
-        df_t = df.T
-        plot_difference_bar_chart(df)
-
-plot_difference_bar_chart(df)
+if chart_type == "Line charts":  # yearly + line
+    plot_difference_line_char(df)
+else:  # yearly + bar
+    df_t = df.T
+    plot_difference_bar_chart(df)
 
 st.header("Detailed calculation")
 
