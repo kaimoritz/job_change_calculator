@@ -210,10 +210,11 @@ def plot_bar_chart(_df):
             orientation="h",
             yanchor="bottom",
             y=-0.3,
-            xanchor="left",
-            x=0.0
+            xanchor="center",
+            x=0.5
         ),
         legend_title=None,
+        yaxis_title="Income (k€)"
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -233,7 +234,8 @@ def plot_line_chart(_df_cumsum):
             x=0.5
         ),
         legend_title=None,
-        yaxis=dict(range=[0, df_long['Income'].max() * 1.1])  # Y-axis start with '0'
+        yaxis=dict(range=[0, df_long['Income'].max() * 1.1]),  # Y-axis start with '0'
+        yaxis_title="Income (k€)"
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -248,7 +250,7 @@ def plot_difference_bar_chart(_df):
         df_diff = _df.loc[[CURRENT_JOB, TOTAL_NEW_JOB]].diff().iloc[1].reset_index()
         title = f"Difference between '{CURRENT_JOB}' and '{TOTAL_NEW_JOB}'"
     df_diff.columns = ['Year', 'Difference']
-    # Differenz-Balkendiagramm mit Farbänderung für negative Werte
+    # add colors: negative is red, positive is green
     df_diff['Color'] = df_diff['Difference'].apply(lambda x: 'red' if x < 0 else 'green')
     fig = px.bar(df_diff,
                  x='Year',
@@ -258,12 +260,14 @@ def plot_difference_bar_chart(_df):
                  color_discrete_map={'red': '#D62728', 'green': '#2CA02C'})
 
     # set y axis to always display the "0"-line
-    y_min = df_diff['Difference'].min()
-    if y_min > - 5.0: y_min = -5.0
-    y_max = df_diff['Difference'].max()
-    if y_max < 5.0: y_max = 5.0
+    y_min = min(df_diff['Difference'].min(), -5.0)
+    y_max = max(df_diff['Difference'].max(), 5.0)
     fig.update_layout(yaxis=dict(range=[y_min, y_max * 1.1]),
+                      yaxis_title="Difference (k€)",
                       showlegend=False,
+                      title_font=dict(size=14, family="Arial", weight="normal"),
+                      title_x=0.25,  # centered title
+                      title_y=0.0  # title below the chart
                       )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -281,12 +285,15 @@ def plot_difference_line_char(_df):
     df_diff.columns = ['Year', 'Difference']
     fig = px.line(df_diff, x='Year', y='Difference', title=title, markers=True)
     # set y axis to always display the "0"-line
-    y_min = df_diff['Difference'].min()
-    if y_min > - 5.0: y_min = -5.0
-    y_max = df_diff['Difference'].max()
-    y_max = df_diff['Difference'].max()
+    y_min = min(df_diff['Difference'].min(), -5.0)
+    y_max = max(df_diff['Difference'].max(), 5.0)
     fig.update_layout(yaxis=dict(range=[y_min, y_max * 1.1]),
-                      showlegend=False, )
+                      yaxis_title="Income (k€)",
+                      showlegend=False,
+                      title_font=dict(size=14, family="Arial", weight="normal"),
+                      title_x=0.25, # centered title
+                      title_y=0.0 # title below the chart
+                      )
 
     st.plotly_chart(fig, use_container_width=True)
 
