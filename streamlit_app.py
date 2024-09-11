@@ -219,6 +219,7 @@ def plot_bar_chart(_df):
     st.plotly_chart(fig, use_container_width=True)
 
 
+
 def plot_line_chart(_df_cumsum):
     # convert df into "longer" format, because it is easier for plotly
     df_long = _df_cumsum.reset_index().melt(id_vars=TYPE_OF_INCOME, var_name='Year', value_name='Income')
