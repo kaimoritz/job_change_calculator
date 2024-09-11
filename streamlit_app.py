@@ -16,10 +16,17 @@ st.set_page_config(
 )
 
 TYPE_OF_INCOME = "Type of income"
-NEW_JOB = "Salary new job"
 CURRENT_JOB = "Salary current Job"
+NEW_JOB = "Salary new job"
 ANNUAL_COMPENSATIOIN = "Compensation payment (annual)"
 TOTAL_NEW_JOB = f"Total: {NEW_JOB} + {ANNUAL_COMPENSATIOIN}"
+
+COLOR_CURRENT_JOB = "#83C9FF"
+COLOR_NEW_JOB = "#0068C9"
+COLOR_ANNUAL_COMPENSATION = "#FFB74D"
+COLOR_TOTAL_NEW_JOB = "#7F7F7F"
+COLOR_POSITIVE ="#4CAF50"
+COLOR_NEGATIVE ="#E57373"
 
 st.logo("images/logo.png")
 st.sidebar.text("")  # vertical space
@@ -203,7 +210,19 @@ with col_3_4:
 def plot_bar_chart(_df):
     # convert df into "longer" format, because it is easier for plotly
     df_long = _df.reset_index().melt(id_vars=TYPE_OF_INCOME, var_name='Year', value_name='Income')
-    fig = px.bar(df_long, x='Year', y='Income', color=TYPE_OF_INCOME, barmode='group')
+    fig = px.bar(df_long,
+                 x='Year',
+                 y='Income',
+                 barmode='group',
+                 color=TYPE_OF_INCOME,
+                 color_discrete_map={CURRENT_JOB: COLOR_CURRENT_JOB,
+                                     NEW_JOB: COLOR_NEW_JOB,
+                                     ANNUAL_COMPENSATIOIN: COLOR_ANNUAL_COMPENSATION,
+                                     TOTAL_NEW_JOB: COLOR_TOTAL_NEW_JOB},
+                 )
+
+
+
     # set legend
     fig.update_layout(
         legend=dict(
@@ -223,7 +242,16 @@ def plot_bar_chart(_df):
 def plot_line_chart(_df_cumsum):
     # convert df into "longer" format, because it is easier for plotly
     df_long = _df_cumsum.reset_index().melt(id_vars=TYPE_OF_INCOME, var_name='Year', value_name='Income')
-    fig = px.line(df_long, x='Year', y='Income', color=TYPE_OF_INCOME, markers=True)
+    fig = px.line(df_long,
+                  x='Year',
+                  y='Income',
+                  color=TYPE_OF_INCOME,
+                  color_discrete_map={CURRENT_JOB: COLOR_CURRENT_JOB,
+                                      NEW_JOB: COLOR_NEW_JOB,
+                                      ANNUAL_COMPENSATIOIN: COLOR_ANNUAL_COMPENSATION,
+                                      TOTAL_NEW_JOB: COLOR_TOTAL_NEW_JOB},
+                  markers=True)
+
     fig.update_xaxes(tickmode='linear', dtick=1)  # only full years
     # set legend
     fig.update_layout(
@@ -258,7 +286,7 @@ def plot_difference_bar_chart(_df):
                  y='Difference',
                  title=title,
                  color='Color',
-                 color_discrete_map={'red': '#D62728', 'green': '#2CA02C'})
+                 color_discrete_map={'red': COLOR_NEGATIVE, 'green': COLOR_POSITIVE})
 
     # set y axis to always display the "0"-line
     y_min = min(df_diff['Difference'].min(), -5.0)
@@ -319,6 +347,8 @@ elif data_type == "Difference":
     else:  # yearly + bar
         df_t = df.T
         plot_difference_bar_chart(df)
+
+plot_difference_bar_chart(df)
 
 st.header("Detailed calculation")
 
