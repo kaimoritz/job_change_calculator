@@ -209,8 +209,9 @@ col_1_1, col_1_2, col_1_3, col_1_4, col_1_5, col_1_6 = st.columns(6)
 help_salary_new_job_initial = "Enter your starting salary of the new job. With a comparision to your current's job salary."
 col_1_1.metric(f"Starting salary new job",
                value=f"{new_job_salary} k€",
-               delta=f"{new_job_salary - current_job_salary:.2f} k€",
+               delta=f"{new_job_salary - current_job_salary:.2f} k€ ({(new_job_salary - current_job_salary)/12:.2f} k€)",
                help=help_salary_new_job_initial)
+
 if salary_increase_percent > 0.0:
     help_salary_new_job_final = (f"This is the salary of the new job when you retire ({new_job_salary_final:.2f} k€). "
                                  f"This takes into account the 'Expected annual salary increase rate (%)' of "
@@ -218,7 +219,7 @@ if salary_increase_percent > 0.0:
                                  f"({(current_job_salary_final):.2f} k€) when you retire.")
     col_1_2.metric(f"Salary new job in {years} years",
                    value=f"{new_job_salary_final:.2f} k€",
-                   delta=f"{(new_job_salary_final - current_job_salary_final):.2f} k€",
+                   delta=f"{(new_job_salary_final - current_job_salary_final):.2f} k€ ({((new_job_salary_final - current_job_salary_final)/12):.2f} k€)",
                    help=help_salary_new_job_final
                    )
 
