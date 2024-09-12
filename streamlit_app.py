@@ -310,7 +310,8 @@ def plot_bar_chart(_df):
                  hover_data={TYPE_OF_INCOME: True, 'Income': True, 'Year': True},
                  title=title,
                  color=TYPE_OF_INCOME,
-                 color_discrete_map=color_discrete_map
+                 color_discrete_map=color_discrete_map,
+                 text_auto=True  # show bar value(s) inside the bars
                  )
 
     # set legend
@@ -328,6 +329,9 @@ def plot_bar_chart(_df):
         title_x=0.0,
         title_y=0.85
     )
+
+    fig.update_traces(texttemplate='%{y:.2f} k€', textposition='auto')  # format display values inside the bars
+
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -391,7 +395,9 @@ def plot_difference_bar_chart(_df_diff):
                  hover_data={'Difference': True, 'Year': True, "Color": False},
                  title=title,
                  color='Color',
-                 color_discrete_map={'red': COLOR_NEGATIVE, 'green': COLOR_POSITIVE})
+                 color_discrete_map={'red': COLOR_NEGATIVE, 'green': COLOR_POSITIVE},
+                 text='Difference'  # show 'difference' value inside the bars
+                 )
 
     # set y axis to always display the "0"-line
     y_min = min(df_diff_t['Difference'].min(), -5.0)
@@ -404,6 +410,7 @@ def plot_difference_bar_chart(_df_diff):
                       title_x=0.0,
                       title_y=0.85
                       )
+    fig.update_traces(texttemplate='%{text:.2f} k€', textposition='auto')  # format text in bars
 
     st.plotly_chart(fig, use_container_width=True)
 
