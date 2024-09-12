@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
     menu_items={
         'Get Help': "https://github.com/kaimoritz/job_change_calculator",
-        'Report a bug': "https://github.com/kaimoritz/job_change_calculator",
+        'Report a bug': "https://github.com/kaimoritz/job_change_calculator/issues",
         'About': "Version 2.0 | Created by Kai Moritz."
     }
 )
