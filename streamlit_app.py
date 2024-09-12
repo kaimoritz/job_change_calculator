@@ -120,59 +120,59 @@ impact of a job change on your future salary and visualize the results.
 """)
 
 
-def add_calculations_salary_in_the_next_years(df, name, initial_salary, salary_increase_rate) -> pd.DataFrame:
-    data = {column_names[0]: [initial_salary]}
+def add_calculations_salary_in_the_next_years(_df, _name, _initial_salary, _salary_increase_rate) -> pd.DataFrame:
+    data = {column_names[0]: [_initial_salary]}
     # calculate the salaries for the next years
-    tmp_salary = initial_salary
-    for i in range(1, df.shape[1]):
+    tmp_salary = _initial_salary
+    for i in range(1, _df.shape[1]):
         previous_year_salary = data[column_names[i - 1]][0]
-        tmp_salary = previous_year_salary * (1 + salary_increase_rate)
+        tmp_salary = previous_year_salary * (1 + _salary_increase_rate)
         data[column_names[i]] = [tmp_salary]
 
-    salary_dict = [initial_salary * ((1 + salary_increase_rate) ** i) for i in range(len(column_names))]
-    df.loc[name] = salary_dict
+    salary_dict = [_initial_salary * ((1 + _salary_increase_rate) ** i) for i in range(len(column_names))]
+    _df.loc[_name] = salary_dict
 
-    return df
+    return _df
 
 
-def add_compensation_payments(df, compensation_payment, annual_payment, investment_revenue_percent) -> pd.DataFrame:
+def add_compensation_payments(_df, _compensation_payment, _annual_payment, _investment_revenue_percent) -> pd.DataFrame:
     # calculation of payments
     payments = []
     compensation_account_balance = []
-    remaining_balance = compensation_payment
+    remaining_balance = _compensation_payment
     for year in column_names:
         if year == column_names[-1]:
             payments.append(remaining_balance)
             remaining_balance = 0
         else:
-            if remaining_balance >= annual_payment:
-                payments.append(annual_payment)
-                remaining_balance -= annual_payment
+            if remaining_balance >= _annual_payment:
+                payments.append(_annual_payment)
+                remaining_balance -= _annual_payment
             else:
                 payments.append(remaining_balance)
                 remaining_balance = 0
         # add the investment revenue after each year.
-        remaining_balance = remaining_balance * (1 + investment_revenue_percent)
+        remaining_balance = remaining_balance * (1 + _investment_revenue_percent)
         compensation_account_balance.append(remaining_balance)
 
     # Add new row to DataFrame
-    df.loc[ANNUAL_COMPENSATION] = payments
+    _df.loc[ANNUAL_COMPENSATION] = payments
 
     # add new row for new job + compensation
-    df.loc[TOTAL_NEW_JOB] = np.add(df.loc[NEW_JOB], df.loc[ANNUAL_COMPENSATION])
+    _df.loc[TOTAL_NEW_JOB] = np.add(_df.loc[NEW_JOB], _df.loc[ANNUAL_COMPENSATION])
 
     # add new row for the remaining height of your compensation balance
-    df.loc[COMPENSATION_ACCOUNT_BALANCE] = compensation_account_balance
+    _df.loc[COMPENSATION_ACCOUNT_BALANCE] = compensation_account_balance
 
-    return df
+    return _df
 
 
-def add_calculations_differences_in_the_next_years(df):
+def add_calculations_differences_in_the_next_years(_df):
     if compensation_paid == 0:
-        df.loc[DIFFERENCE_NJ_CJ] = df.loc[NEW_JOB] - df.loc[CURRENT_JOB]
+        _df.loc[DIFFERENCE_NJ_CJ] = _df.loc[NEW_JOB] - _df.loc[CURRENT_JOB]
     else:
-        df.loc[DIFFERENCE_NJ_CJ_COMP] = df.loc[NEW_JOB] + df.loc[ANNUAL_COMPENSATION] - df.loc[CURRENT_JOB]
-    return df
+        _df.loc[DIFFERENCE_NJ_CJ_COMP] = _df.loc[NEW_JOB] + _df.loc[ANNUAL_COMPENSATION] - _df.loc[CURRENT_JOB]
+    return _df
 
 
 column_names = [float(i) for i in range(1, years + 1)]
@@ -228,7 +228,8 @@ col_1_3.metric("Overall sum current job",
                value=f"{current_job_overall_salary:.2f} k€",
                help=help_overall_sum_current)
 
-help_overall_sum_new = "The cumulative sum of your new job's salary until your retirement. Does not include the compensation payment."
+help_overall_sum_new = ("The cumulative sum of your new job's salary until your retirement. Does not include the "
+                        "compensation payment.")
 new_job_overall_salary = overall_sum_4_job(df, NEW_JOB, column_names)
 col_1_4.metric("Overall sum new job",
                value=f"{new_job_overall_salary:.2f} k€",
@@ -236,7 +237,8 @@ col_1_4.metric("Overall sum new job",
                )
 
 help_compenstation = ("Amount of your compensation payment, if received. This includes your expected annual revenue "
-                      "from investment")
+                      "when investing the compensation payment e.g in stocks. The trend value is the amount of "
+                      "revenue.")
 col_1_5.metric("Compensation incl. revenue",
                value=f"{compensation_payment_incl_revenue:.2f} k€",
                delta=f"{compensation_payment_incl_revenue - compensation_payment:.2f} k€",
@@ -347,7 +349,7 @@ def plot_line_chart(_df_cumsum):
     st.plotly_chart(fig, use_container_width=True)
 
 
-def plot_difference_bar_chart(df_diff):
+def plot_difference_bar_chart(_df_diff):
     if compensation_paid == 0:
         # -> difference between CURRENT_JOB, NEW_JOB
         title = f"Difference between {CURRENT_JOB} and {NEW_JOB}"
@@ -357,7 +359,7 @@ def plot_difference_bar_chart(df_diff):
     if data_type == "Overall sum":
         title = title + " (cumulative overall sum)"
 
-    df_diff_t = df_diff.T
+    df_diff_t = _df_diff.T
     df_diff_t = df_diff_t.reset_index()
     df_diff_t.columns = ['Year', 'Difference']
     # add colors: negative is red, positive is green
@@ -385,7 +387,7 @@ def plot_difference_bar_chart(df_diff):
     st.plotly_chart(fig, use_container_width=True)
 
 
-def plot_difference_line_char(df_diff):
+def plot_difference_line_char(_df_diff):
     if compensation_paid == 0:
         # -> difference between CURRENT_JOB, NEW_JOB
         title = f"Difference between '{CURRENT_JOB}' and '{NEW_JOB}'"
@@ -396,7 +398,7 @@ def plot_difference_line_char(df_diff):
     if data_type == "Overall sum":
         title = title + " (cumulative overall sum)"
 
-    df_diff_t = df_diff.T
+    df_diff_t = _df_diff.T
     df_diff_t = df_diff_t.reset_index()
     df_diff_t.columns = ['Year', 'Difference']
     fig = px.line(df_diff_t, x='Year', y='Difference', title=title, markers=True, )
@@ -491,7 +493,8 @@ st.text(" ")
 st.text(" ")
 
 st.write("""Note: I have deliberately not taken gross-net salary into account here, as this is highly individual. You 
-may enter your your gross or net salary, but you should than stick to one type - don't  mix it up.""")
+may enter your your gross or net salary, but you should than stick to one type - don't  mix it up. The inflation rate 
+is also not taken into account.""")
 
 st.write("💡", """Start with your gross salary to get a quick overview. If you want a better result, go to an <a 
 href='https://www.lexware.de/werkzeuge-ebooks/brutto-netto-rechner/' id='gross-net-link'>online gross-net 
