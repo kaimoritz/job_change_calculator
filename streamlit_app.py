@@ -368,7 +368,7 @@ def plot_line_chart(_df_cumsum):
         title_font=dict(size=14, family="Arial", weight="normal"),
         title_x=0.0,
         title_y=0.85,
-        yaxis=dict(range=[0, df_long['Income'].max() * 1.1]),  # Y-axis start with '0'
+        yaxis=dict(range=[0, df_long['Income'].max() * 1.1]),  # y-axis start with '0'
         yaxis_title="Income (k€)"
     )
     st.plotly_chart(fig, use_container_width=True)
