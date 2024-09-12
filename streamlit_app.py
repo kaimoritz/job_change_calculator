@@ -11,7 +11,7 @@ st.set_page_config(
     menu_items={
         'Get Help': "https://github.com/kaimoritz/job_change_calculator",
         'Report a bug': "https://github.com/kaimoritz/job_change_calculator",
-        'About': "Version 1.0 | Created by Kai Moritz."
+        'About': "Version 2.0 | Created by Kai Moritz."
     }
 )
 
