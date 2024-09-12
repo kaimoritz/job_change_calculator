@@ -520,6 +520,8 @@ st.text(" ")
 st.text(" ")
 st.text(" ")
 
+st.write("No responsibility is taken for the accuracy of this calculations and information.")
+
 st.write("""Note: I have deliberately not taken gross-net salary into account here, as this is highly individual. You 
 may enter your your gross or net salary, but you should than stick to one type - don't  mix it up. The inflation 
 rate is not explicitly included, but you can account for it in the input field ‘Expected annual salary increase rate 
