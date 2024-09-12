@@ -20,6 +20,7 @@ TYPE_OF_INCOME = "Type of income"
 CURRENT_JOB = "Salary current Job"
 NEW_JOB = "Salary new job"
 ANNUAL_COMPENSATION = "Compensation payment (annual)"
+COMPENSATION_ACCOUNT_BALANCE = "Remaining compensation (incl. investment revenue)"  # the remaining heigt of the compensation over the years
 TOTAL_NEW_JOB = f"Total: {NEW_JOB} + {ANNUAL_COMPENSATION}"
 DIFFERENCE_NJ_CJ = f"Difference {NEW_JOB} vs. {CURRENT_JOB}"
 DIFFERENCE_NJ_CJ_COMP = f"Difference {NEW_JOB} vs {CURRENT_JOB} + {ANNUAL_COMPENSATION}"
@@ -63,7 +64,8 @@ help_current_job_salary = "Enter the salary of your CURRENT job. You can enter y
 current_job_salary = st.sidebar.number_input("Current Job Salary (k€/year)", min_value=0, value=100,
                                              help=help_current_job_salary)
 
-help_new_job_salary = "Enter the salary of your NEW job. You can enter your gross or net salary, but then enter gross or net everywhere."
+help_new_job_salary = ("Enter the salary of your NEW job. You can enter your gross or net salary, but then enter gross "
+                       "or net everywhere.")
 new_job_salary = st.sidebar.number_input("New job Salary (k€/year)", min_value=0, value=80, help=help_new_job_salary)
 
 help_salary_increase_input = "Enter the expected annual salary increase in percent. E.g. '2.00'%."
@@ -72,37 +74,46 @@ salary_increase_input = st.sidebar.number_input("Expected annual salary increase
                                                 value=0.0,
                                                 step=0.1,
                                                 help=help_salary_increase_input)
-salary_increase_rate = salary_increase_input / 100
+salary_increase_percent = salary_increase_input / 100
 
 compensation_payment = 0
 compensation_annual_rate = 0
+investment_revenue_input = 0
+investment_revenue_percent = 0.0
+
 help_compensation_paid = "If you will receive a compensation payment, activate the checkbox and enter your numbers."
 compensation_paid = st.sidebar.checkbox("I will receive a compensation payment", help=help_compensation_paid)
+
 if compensation_paid:
-    help_compensation_payment = "Enter the amount of compensation payment you will receive. You can enter your gross or net salary, but then enter gross or net everywhere."
-    compensation_payment = st.sidebar.number_input("Compensation payment (k€)", min_value=0, value=90, step=1,
+    help_compensation_payment = ("Enter the amount of compensation payment you will receive. You can enter your gross "
+                                 "or net salary, but then enter gross or net everywhere.")
+    compensation_payment = st.sidebar.number_input("Compensation payment (k€)",
+                                                   min_value=0,
+                                                   value=90,
+                                                   step=1,
                                                    help=help_compensation_payment)
-    help_compensation_annual_payment = "You can use the compensation payment you receive to compensate for a lower salary in your new job. To do this, you pay yourself the desired amount of your compensation payment each year."
-    compensation_annual_rate = st.sidebar.number_input("Annual payment from compensation payment (yearly/k€)",
+
+    help_compensation_annual_payment = ("You can use the compensation payment you receive to compensate for a lower "
+                                        "salary in your new job. To do this, you pay yourself the desired amount of "
+                                        "your compensation payment each year.")
+    compensation_annual_rate = st.sidebar.number_input("Annual payout from compensation payment (yearly/k€)",
                                                        min_value=0,
                                                        value=25,
                                                        help=help_compensation_annual_payment)
 
+    help_investment_revenue_input = ("If you plan to invest your compensation payment (e.g. ETF, stocks, gold, ...), "
+                                     "enter the expected annual increase in value including dividend (e.g. 5%).")
+    investment_revenue_input = st.sidebar.number_input("Expected annual revenue from investment (%)",
+                                                       min_value=0.0,
+                                                       value=0.0,
+                                                       step=0.1,
+                                                       help=help_investment_revenue_input)
+    investment_revenue_percent = investment_revenue_input / 100  # 2% -> 0.02
+
 st.sidebar.text("")  # vertical space
 st.sidebar.write("<sup>Reset: Press 'STRG'+'F5'</sup>", unsafe_allow_html=True)
 
-
-def calculate_final_salary(start_salary, increase, years):
-    final_salary = start_salary * (1 + increase) ** (
-            years - 1)  # years-1 because the first increase is after the first year.
-    return final_salary
-
-
-current_job_salary_final = calculate_final_salary(current_job_salary, salary_increase_rate, years)
-new_job_salary_final = calculate_final_salary(new_job_salary, salary_increase_rate, years)
-
 st.title("Do you want or need to change your current job?")
-
 st.text("""
 Have you ever wondered what that means for your salary? With this app, you can easily calculate the financial 
 impact of a job change on your future salary and visualize the results.
@@ -124,14 +135,15 @@ def add_calculations_salary_in_the_next_years(df, name, initial_salary, salary_i
     return df
 
 
-def add_compensation_payments(df, compensation_payment, annual_payment) -> pd.DataFrame:
+def add_compensation_payments(df, compensation_payment, annual_payment, investment_revenue_percent) -> pd.DataFrame:
     # calculation of payments
     payments = []
+    compensation_account_balance = []
     remaining_balance = compensation_payment
-
     for year in column_names:
         if year == column_names[-1]:
             payments.append(remaining_balance)
+            remaining_balance = 0
         else:
             if remaining_balance >= annual_payment:
                 payments.append(annual_payment)
@@ -139,12 +151,18 @@ def add_compensation_payments(df, compensation_payment, annual_payment) -> pd.Da
             else:
                 payments.append(remaining_balance)
                 remaining_balance = 0
+        # add the investment revenue after each year.
+        remaining_balance = remaining_balance * (1 + investment_revenue_percent)
+        compensation_account_balance.append(remaining_balance)
 
     # Add new row to DataFrame
     df.loc[ANNUAL_COMPENSATION] = payments
 
     # add new row for new job + compensation
     df.loc[TOTAL_NEW_JOB] = np.add(df.loc[NEW_JOB], df.loc[ANNUAL_COMPENSATION])
+
+    # add new row for the remaining height of your compensation balance
+    df.loc[COMPENSATION_ACCOUNT_BALANCE] = compensation_account_balance
 
     return df
 
@@ -160,17 +178,27 @@ def add_calculations_differences_in_the_next_years(df):
 column_names = [float(i) for i in range(1, years + 1)]
 df = pd.DataFrame(columns=column_names)
 df.index.name = TYPE_OF_INCOME
-df = add_calculations_salary_in_the_next_years(df, CURRENT_JOB, current_job_salary, salary_increase_rate)
-df = add_calculations_salary_in_the_next_years(df, NEW_JOB, new_job_salary, salary_increase_rate)
+df = add_calculations_salary_in_the_next_years(df, CURRENT_JOB, current_job_salary, salary_increase_percent)
+df = add_calculations_salary_in_the_next_years(df, NEW_JOB, new_job_salary, salary_increase_percent)
 if compensation_paid:
-    df = add_compensation_payments(df, compensation_payment, compensation_annual_rate)
+    df = add_compensation_payments(df, compensation_payment, compensation_annual_rate, investment_revenue_percent)
 df = add_calculations_differences_in_the_next_years(df)
 
 df.columns = df.columns.astype(float)
 df = df.sort_index(axis=1)
 
-
 # metrics
+# def calculate_final_salary(start_salary, increase, years):
+#    final_salary = start_salary * (1 + increase) ** (
+#            years - 1)  # years-1 because the first increase is after the first year.
+#    return final_salary
+current_job_salary_final = df.loc[CURRENT_JOB].iloc[-1]
+new_job_salary_final = df.loc[NEW_JOB].iloc[-1]
+if compensation_paid:
+    compensation_payment_incl_revenue = df.loc[ANNUAL_COMPENSATION].sum()
+else:
+    compensation_payment_incl_revenue = 0.0
+
 def overall_sum_4_job(df, job_name, column_names) -> float:
     sum = np.sum(df.loc[job_name, column_names].values)
     return sum
@@ -183,10 +211,10 @@ col_1_1.metric(f"Starting salary new job",
                value=f"{new_job_salary} k€",
                delta=f"{new_job_salary - current_job_salary:.2f} k€",
                help=help_salary_new_job_initial)
-if salary_increase_rate > 0.0:
+if salary_increase_percent > 0.0:
     help_salary_new_job_final = (f"This is the salary of the new job when you retire ({new_job_salary_final:.2f} k€). "
                                  f"This takes into account the 'Expected annual salary increase rate (%)' of "
-                                 f"{salary_increase_rate}%. Compared to the current job's salary "
+                                 f"{salary_increase_percent}%. Compared to the current job's salary "
                                  f"({(current_job_salary_final):.2f} k€) when you retire.")
     col_1_2.metric(f"Salary new job in {years} years",
                    value=f"{new_job_salary_final:.2f} k€",
@@ -207,15 +235,18 @@ col_1_4.metric("Overall sum new job",
                help=help_overall_sum_new
                )
 
-help_compenstation = "Amount of your compensation payment, if received"
-col_1_5.metric("Compensation payment",
-               value=f"{compensation_payment:.2f} k€",
+help_compenstation = ("Amount of your compensation payment, if received. This includes your expected annual revenue "
+                      "from investment")
+col_1_5.metric("Compensation incl. revenue",
+               value=f"{compensation_payment_incl_revenue:.2f} k€",
+               delta=f"{compensation_payment_incl_revenue - compensation_payment:.2f} k€",
                help=help_compenstation
                )
 
-overall_delta = new_job_overall_salary + compensation_payment - current_job_overall_salary
+overall_delta = new_job_overall_salary + compensation_payment_incl_revenue - current_job_overall_salary
 help_overall_delta = (f"The is the cumulative income for the next {years} years, including the compensation payment of "
-                      f"{compensation_payment} k€. New job+compensation payment vs. current job.")
+                      f"{compensation_payment_incl_revenue} k€ including investment revenues. New job+compensation "
+                      f"payment vs. current job.")
 col_1_6.metric("Overall delta",
                value=f"{overall_delta:.2f} k€",
                delta=f"{overall_delta:.2f} k€",
