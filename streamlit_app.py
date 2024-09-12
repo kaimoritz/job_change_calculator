@@ -514,8 +514,10 @@ st.text(" ")
 st.text(" ")
 
 st.write("""Note: I have deliberately not taken gross-net salary into account here, as this is highly individual. You 
-may enter your your gross or net salary, but you should than stick to one type - don't  mix it up. The inflation rate 
-is also not taken into account.""")
+may enter your your gross or net salary, but you should than stick to one type - don't  mix it up. The inflation 
+rate is not explicitly included, but you can account for it in the input field ‘Expected annual salary increase rate 
+(%)’ by entering ‘0.0%’ to assume that inflation is covered by the annual salary increases. Please also consider 
+inflation when entering the ‘Expected annual revenue from investment (%)’ field.""")
 
 st.write("💡", """Start with your gross salary to get a quick overview. If you want a better result, go to an <a 
 href='https://www.lexware.de/werkzeuge-ebooks/brutto-netto-rechner/' id='gross-net-link'>online gross-net 
