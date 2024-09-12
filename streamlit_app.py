@@ -57,20 +57,33 @@ st.sidebar.text("")  # vertical space
 
 # sidebar: parameter input
 help_year = "Enter the number of years you want work until retirement."
-years = st.sidebar.number_input("Years until my retirement", min_value=0, max_value=100, value=10, step=1,
+years = st.sidebar.number_input("Years until my retirement",
+                                min_value=0,
+                                max_value=100,
+                                value=10,
+                                step=1,
                                 help=help_year)
 
-help_current_job_salary = "Enter the salary of your CURRENT job. You can enter your gross or net salary, but then enter gross or net everywhere."
-current_job_salary = st.sidebar.number_input("Current Job Salary (k€/year)", min_value=0, value=100,
+help_current_job_salary = ("Enter the salary of your CURRENT job. You can enter your gross or net salary, but then "
+                           "enter gross or net everywhere.")
+current_job_salary = st.sidebar.number_input("Current Job Salary (k€/year)",
+                                             min_value=0,
+                                             max_value=1000,
+                                             value=100,
                                              help=help_current_job_salary)
 
 help_new_job_salary = ("Enter the salary of your NEW job. You can enter your gross or net salary, but then enter gross "
                        "or net everywhere.")
-new_job_salary = st.sidebar.number_input("New job Salary (k€/year)", min_value=0, value=80, help=help_new_job_salary)
+new_job_salary = st.sidebar.number_input("New job Salary (k€/year)",
+                                         min_value=0,
+                                         max_value=1000,
+                                         value=80,
+                                         help=help_new_job_salary)
 
 help_salary_increase_input = "Enter the expected annual salary increase in percent. E.g. '2.00'%."
 salary_increase_input = st.sidebar.number_input("Expected annual salary increase rate (%)",
                                                 min_value=0.0,
+                                                max_value=100.0,
                                                 value=0.0,
                                                 step=0.1,
                                                 help=help_salary_increase_input)
@@ -89,6 +102,7 @@ if compensation_paid:
                                  "or net salary, but then enter gross or net everywhere.")
     compensation_payment = st.sidebar.number_input("Compensation payment (k€)",
                                                    min_value=0,
+                                                   max_value=1000,
                                                    value=90,
                                                    step=1,
                                                    help=help_compensation_payment)
@@ -98,6 +112,7 @@ if compensation_paid:
                                         "your compensation payment each year.")
     compensation_annual_rate = st.sidebar.number_input("Annual payout from compensation payment (yearly/k€)",
                                                        min_value=0,
+                                                       max_value=1000,
                                                        value=25,
                                                        help=help_compensation_annual_payment)
 
@@ -105,6 +120,7 @@ if compensation_paid:
                                      "enter the expected annual increase in value including dividend (e.g. 5%).")
     investment_revenue_input = st.sidebar.number_input("Expected annual revenue from investment (%)",
                                                        min_value=0.0,
+                                                       max_value=500.0,
                                                        value=0.0,
                                                        step=0.1,
                                                        help=help_investment_revenue_input)
@@ -206,20 +222,24 @@ def overall_sum_4_job(df, job_name, column_names) -> float:
 
 st.header("Key metrics")
 col_1_1, col_1_2, col_1_3, col_1_4, col_1_5, col_1_6 = st.columns(6)
-help_salary_new_job_initial = "Enter your starting salary of the new job. With a comparision to your current's job salary."
+help_salary_new_job_initial = ("Your starting salary of the new job. The plus/minus trend is the comparison to "
+                               "your current's job salary per year (per month).")
 col_1_1.metric(f"Starting salary new job",
                value=f"{new_job_salary} k€",
                delta=f"{new_job_salary - current_job_salary:.2f} k€ ({(new_job_salary - current_job_salary)/12:.2f} k€)",
                help=help_salary_new_job_initial)
 
 if salary_increase_percent > 0.0:
-    help_salary_new_job_final = (f"This is the salary of the new job when you retire ({new_job_salary_final:.2f} k€). "
-                                 f"This takes into account the 'Expected annual salary increase rate (%)' of "
-                                 f"{salary_increase_percent}%. Compared to the current job's salary "
-                                 f"({(current_job_salary_final):.2f} k€) when you retire.")
+    salary_difference_year = new_job_salary_final - current_job_salary_final
+    salary_difference_month = salary_difference_year / 12
+    help_salary_new_job_final = (f"This is the salary of the new job when you retire in {years} years: ({new_job_salary_final:.2f} k€). "
+                                 f"This takes into account your 'Expected annual salary increase rate (%)' of "
+                                 f"{salary_increase_input}%. The plus/minus trend compares this to the current salary"
+                                 f" in {years} years: {(current_job_salary_final):.2f} k€), shown as difference "
+                                 f"k€/year (k€/month).")
     col_1_2.metric(f"Salary new job in {years} years",
                    value=f"{new_job_salary_final:.2f} k€",
-                   delta=f"{(new_job_salary_final - current_job_salary_final):.2f} k€ ({((new_job_salary_final - current_job_salary_final)/12):.2f} k€)",
+                   delta=f"{(salary_difference_year):.2f} k€ ({salary_difference_month:.2f} k€)",
                    help=help_salary_new_job_final
                    )
 
@@ -239,7 +259,7 @@ col_1_4.metric("Overall sum new job",
 
 help_compenstation = ("Amount of your compensation payment, if received. This includes your expected annual revenue "
                       "when investing the compensation payment e.g in stocks. The trend value is the amount of "
-                      "revenue.")
+                      "revenue from the investment.")
 col_1_5.metric("Compensation incl. revenue",
                value=f"{compensation_payment_incl_revenue:.2f} k€",
                delta=f"{compensation_payment_incl_revenue - compensation_payment:.2f} k€",
@@ -249,7 +269,7 @@ col_1_5.metric("Compensation incl. revenue",
 overall_delta = new_job_overall_salary + compensation_payment_incl_revenue - current_job_overall_salary
 help_overall_delta = (f"The is the cumulative income for the next {years} years, including the compensation payment of "
                       f"{compensation_payment_incl_revenue} k€ including investment revenues. New job+compensation "
-                      f"payment vs. current job.")
+                      f"payment+investment revenues vs. current job.")
 col_1_6.metric("Overall delta",
                value=f"{overall_delta:.2f} k€",
                delta=f"{overall_delta:.2f} k€",
