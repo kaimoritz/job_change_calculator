@@ -18,7 +18,9 @@ Parameter:
 * Annual payout from compensation payment (yearly/k€)
 * Expected annual revenue from compensation payment investment (%)
 
-!logo
+![Screenshot](http://url/to/img.png)
+
+
 
 
 ### Running in the streamlit community cloud:
