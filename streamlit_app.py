@@ -531,5 +531,6 @@ inflation when entering the ‘Expected annual revenue from investment (%)’ fi
 st.write("💡", """Start with your gross salary to get a quick overview. If you want a better result, go to an <a 
 href='https://www.lexware.de/werkzeuge-ebooks/brutto-netto-rechner/' id='gross-net-link'>online gross-net 
 calculator</a> to calculate your real net salary and your <a 
-href='https://www.lexware.de/werkzeuge-ebooks/abfindungsrechner/' id='gross-net-link'> net compensation payment</a>.""",
+href='https://www.lexware.de/werkzeuge-ebooks/abfindungsrechner/' id='gross-net-link'> net compensation payment</a>. 
+The calculated results will be your future net income.""",
          unsafe_allow_html=True)
