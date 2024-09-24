@@ -204,16 +204,13 @@ df.columns = df.columns.astype(float)
 df = df.sort_index(axis=1)
 
 # metrics
-# def calculate_final_salary(start_salary, increase, years):
-#    final_salary = start_salary * (1 + increase) ** (
-#            years - 1)  # years-1 because the first increase is after the first year.
-#    return final_salary
 current_job_salary_final = df.loc[CURRENT_JOB].iloc[-1]
 new_job_salary_final = df.loc[NEW_JOB].iloc[-1]
 if compensation_paid:
     compensation_payment_incl_revenue = df.loc[ANNUAL_COMPENSATION].sum()
 else:
     compensation_payment_incl_revenue = 0.0
+
 
 def overall_sum_4_job(df, job_name, column_names) -> float:
     sum = np.sum(df.loc[job_name, column_names].values)
@@ -226,17 +223,18 @@ help_salary_new_job_initial = ("Your starting salary of the new job. The plus/mi
                                "your current's job salary per year (per month).")
 col_1_1.metric(f"Starting salary new job",
                value=f"{new_job_salary} k€",
-               delta=f"{new_job_salary - current_job_salary:.2f} k€ ({(new_job_salary - current_job_salary)/12:.2f} k€)",
+               delta=f"{new_job_salary - current_job_salary:.2f} k€ ({(new_job_salary - current_job_salary) / 12:.2f} k€)",
                help=help_salary_new_job_initial)
 
 if salary_increase_percent > 0.0:
     salary_difference_year = new_job_salary_final - current_job_salary_final
     salary_difference_month = salary_difference_year / 12
-    help_salary_new_job_final = (f"This is the salary of the new job when you retire in {years} years: ({new_job_salary_final:.2f} k€). "
-                                 f"This takes into account your 'Expected annual salary increase rate (%)' of "
-                                 f"{salary_increase_input}%. The plus/minus trend compares this to the current salary"
-                                 f" in {years} years: {(current_job_salary_final):.2f} k€), shown as difference "
-                                 f"k€/year (k€/month).")
+    help_salary_new_job_final = (
+        f"This is the salary of the new job when you retire in {years} years: ({new_job_salary_final:.2f} k€). "
+        f"This takes into account your 'Expected annual salary increase rate (%)' of "
+        f"{salary_increase_input}%. The plus/minus trend compares this to the current salary"
+        f" in {years} years: {(current_job_salary_final):.2f} k€), shown as difference "
+        f"k€/year (k€/month).")
     col_1_2.metric(f"Salary new job in {years} years",
                    value=f"{new_job_salary_final:.2f} k€",
                    delta=f"{(salary_difference_year):.2f} k€ ({salary_difference_month:.2f} k€)",
@@ -262,7 +260,7 @@ help_compenstation = ("Amount of your compensation payment, if received. This in
                       "revenue from the investment.")
 col_1_5.metric("Compensation incl. revenue",
                value=f"{compensation_payment_incl_revenue:.2f} k€",
-               delta=f"{compensation_payment_incl_revenue - compensation_payment:.2f} k€",
+               delta=f"{compensation_payment_incl_revenue - compensation_payment:.2f} k€ (revenue)",
                help=help_compenstation
                )
 
